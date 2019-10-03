@@ -1,0 +1,3 @@
+name: ${project.artifactId}
+main: ${project.groupId}.UHC
+version: ${project.version}
