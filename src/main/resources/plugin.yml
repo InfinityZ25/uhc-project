@@ -1,3 +1,6 @@
 name: ${project.artifactId}
 main: ${project.groupId}.UHC
-version: ${project.version}
+version: 2019.12.1.1-A
+
+commands:
+  uhc:
