@@ -70,7 +70,7 @@ public class Border extends BukkitRunnable{
         milliseconds = System.currentTimeMillis();
         //Go one by one making sure that their part of the wall has been built.
         if(!north){
-            for (int i = northInt; northInt <= size*2; northInt++) {
+            for (; northInt <= size*2; northInt++) {
                 if(milliseconds +maxtick <= System.currentTimeMillis()){
                     break;
                 }
@@ -86,7 +86,7 @@ public class Border extends BukkitRunnable{
             return;
         }
         if(!south){
-            for (int i = southInt; southInt <= size*2; southInt++) {
+            for (; southInt <= size*2; southInt++) {
                 if(milliseconds +maxtick <= System.currentTimeMillis()){
                     break;
                 }
@@ -102,7 +102,7 @@ public class Border extends BukkitRunnable{
             return;
         }
         if(!west){
-            for (int i = westInt; westInt <= (size*2)+1; westInt++) {
+            for (; westInt <= (size*2)+1; westInt++) {
                 if(milliseconds +maxtick <= System.currentTimeMillis()){
                     break;
                 }
@@ -118,7 +118,7 @@ public class Border extends BukkitRunnable{
             return;
         }
         if(!east){            
-            for (int i = eastInt; eastInt <= size*2; eastInt++) {
+            for (; eastInt <= size*2; eastInt++) {
                 if(milliseconds +maxtick <= System.currentTimeMillis()){
                     break;
                 }

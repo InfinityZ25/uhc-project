@@ -1,22 +1,23 @@
 package me.infinityz.commands;
 
-import java.util.Random;
-
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Villager;
+import org.bukkit.entity.Skeleton.SkeletonType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import me.infinityz.UHC;
 import me.infinityz.border.Border;
-import me.infinityz.scoreboard.UHCBoard;
+import me.infinityz.combatlogger.SkeletonCombatLogger;
 import net.md_5.bungee.api.ChatColor;
+import net.minecraft.server.v1_8_R3.EntitySkeleton;
 
 /**
  * GlobalCommands
@@ -57,6 +58,26 @@ public class GlobalCommands implements CommandExecutor {
                     borderTask.runTaskTimer(instance, 0, Integer.parseInt(args[4]));
                     break;
                 }
+                case "combat":{
+
+                    Villager villager = instance.nmsNpc.spawn(player.getLocation());
+                    villager.setCustomNameVisible(true);
+                    villager.setCustomName("Villager" + args[1]);
+
+                    break;
+                }
+                case "skeleton":{
+
+                    Skeleton skeletonCombatLogger = instance.skeleton.spawn(player);
+                    skeletonCombatLogger.setSkeletonType(SkeletonType.WITHER);
+                    skeletonCombatLogger.setCustomNameVisible(true);
+                    skeletonCombatLogger.setCustomName("CombatLogger " + args[1]);
+                    break;
+                }
+                case "inv":{
+                    toInv(player.getInventory());
+                    break;
+                }
 
             }
 
@@ -65,5 +86,26 @@ public class GlobalCommands implements CommandExecutor {
         return false;
     }
 
+    
+    public void toInv(PlayerInventory inventory){
+        int i = 0;
+        for(org.bukkit.inventory.ItemStack item : inventory.getContents()){
+            if(item == null){
+                i++;
+                continue;
+            }
+            Bukkit.broadcastMessage(i+ ". " + item.getType());
+            i++;
+        }
+        for(org.bukkit.inventory.ItemStack item : inventory.getArmorContents()){
+            if(item == null){
+                i++;
+                continue;
+            }
+            Bukkit.broadcastMessage(i+ ". Armor " + item.getType());
+            i++;
+        }
+
+    }
     
 }
