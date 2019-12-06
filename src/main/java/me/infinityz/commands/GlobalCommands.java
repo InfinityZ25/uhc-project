@@ -1,23 +1,21 @@
 package me.infinityz.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Villager;
 import org.bukkit.entity.Skeleton.SkeletonType;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Villager;
 import org.bukkit.inventory.PlayerInventory;
 
 import me.infinityz.UHC;
 import me.infinityz.border.Border;
-import me.infinityz.combatlogger.SkeletonCombatLogger;
+import me.infinityz.scatter.Scatter;
+import me.infinityz.scatter.ScatterTask;
+import me.infinityz.scatter.TeleportTask;
 import net.md_5.bungee.api.ChatColor;
-import net.minecraft.server.v1_8_R3.EntitySkeleton;
 
 /**
  * GlobalCommands
@@ -58,14 +56,6 @@ public class GlobalCommands implements CommandExecutor {
                     borderTask.runTaskTimer(instance, 0, Integer.parseInt(args[4]));
                     break;
                 }
-                case "combat":{
-
-                    Villager villager = instance.nmsNpc.spawn(player.getLocation());
-                    villager.setCustomNameVisible(true);
-                    villager.setCustomName("Villager" + args[1]);
-
-                    break;
-                }
                 case "skeleton":{
 
                     Skeleton skeletonCombatLogger = instance.skeleton.spawn(player);
@@ -74,9 +64,13 @@ public class GlobalCommands implements CommandExecutor {
                     skeletonCombatLogger.setCustomName("CombatLogger " + args[1]);
                     break;
                 }
-                case "inv":{
-                    toInv(player.getInventory());
+                case "scatter":{
+                    ScatterTask scatterTask = new ScatterTask(instance, player.getWorld(), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+                    scatterTask.runTaskTimer(instance, 0, 5);
                     break;
+                }
+                case "tps":{
+                    new TeleportTask(instance).runTask(instance);
                 }
 
             }
@@ -86,26 +80,5 @@ public class GlobalCommands implements CommandExecutor {
         return false;
     }
 
-    
-    public void toInv(PlayerInventory inventory){
-        int i = 0;
-        for(org.bukkit.inventory.ItemStack item : inventory.getContents()){
-            if(item == null){
-                i++;
-                continue;
-            }
-            Bukkit.broadcastMessage(i+ ". " + item.getType());
-            i++;
-        }
-        for(org.bukkit.inventory.ItemStack item : inventory.getArmorContents()){
-            if(item == null){
-                i++;
-                continue;
-            }
-            Bukkit.broadcastMessage(i+ ". Armor " + item.getType());
-            i++;
-        }
-
-    }
     
 }

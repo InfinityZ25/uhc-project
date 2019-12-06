@@ -109,9 +109,13 @@ public class SkeletonCombatLogger extends EntitySkeleton{
         ItemStack leggings = CraftItemStack.asNMSCopy(inventory.getLeggings());
         ItemStack chestplate = CraftItemStack.asNMSCopy(inventory.getChestplate());
         org.bukkit.inventory.ItemStack preHelmet = inventory.getHelmet();
+        //In case the helmet object is null or not existent, add a fake stick helmet to avoid entity from flashing.
+        if(preHelmet == null || preHelmet.getType() ==Material.AIR)preHelmet = new org.bukkit.inventory.ItemStack(Material.STICK);        
         ItemMeta meta = preHelmet.getItemMeta();
+        if(meta != null){            
         meta.spigot().setUnbreakable(true);
         preHelmet.setItemMeta(meta);
+        }
         ItemStack helmet = CraftItemStack.asNMSCopy(preHelmet);
         ItemStack hand = CraftItemStack.asNMSCopy(inventory.getItemInHand());
         entitySkeleton.setEquipment(0, hand);

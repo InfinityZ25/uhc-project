@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import me.infinityz.UHC;
@@ -33,18 +34,26 @@ public class GlobalListeners extends SkeletonListener {
    
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
+        e.setJoinMessage("");
         final Player player = e.getPlayer();
-        new UHCBoard(player,
-                    "  &4&lNOOBSTERS UHC  ",
-                    "&7Time: &f34:38",
-                    "<spacer>",
-                    "&7Your Kills: &f0",
-                    "<spacer>",
-                    "&7Players Left: &f70",
-                    "&7Border: &f2000",
-                    "<spacer>",
-                    " &4&lnoobsters.net ");
-        player.sendMessage(String.format("Hello and welcome %1$s.\nThe current time in milliseconds is %2$s!", player.getName(), System.currentTimeMillis()));
+        new BukkitRunnable(){
+
+            @Override
+            public void run(){
+                new UHCBoard(player,
+                            "  &4&lNOOBSTERS UHC  ",
+                            "&7Time: &f34:38",
+                            "<spacer>",
+                            "&7Your Kills: &f0",
+                            "<spacer>",
+                            "&7Players Left: &f70",
+                            "&7Border: &f2000",
+                            "<spacer>",
+                            " &4&lnoobsters.net ");               
+            }
+
+        }.runTaskAsynchronously(instance);
+        //player.sendMessage(String.format("Hello and welcome %1$s.\nThe current time in milliseconds is %2$s!", player.getName(), System.currentTimeMillis()));
     }
 
     @EventHandler

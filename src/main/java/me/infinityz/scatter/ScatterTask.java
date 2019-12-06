@@ -10,13 +10,14 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.infinityz.UHC;
+import net.minecraft.server.v1_8_R3.MinecraftServer;
 
 /**
  * Scatter
  */
 
 @SuppressWarnings("unused")
-public class Scatter extends BukkitRunnable{
+public class ScatterTask extends BukkitRunnable{
 
     private final UHC instance;
     public List<Location> locations;
@@ -27,14 +28,22 @@ public class Scatter extends BukkitRunnable{
     public int radius;
     public int distance_limit;
     public long max_delay;
-    
+    public long start_time;
+    public boolean test;
 
-    public Scatter(final UHC instance){
+    public ScatterTask(final UHC instance, World world, int radius, int distance_limit, int quantity, long max_delay){
         this.instance = instance;
         this.locations = new ArrayList<Location>();
         this.scattered = 0;
+        this.world = world;
+        this.radius = radius;
+        this.distance_limit = distance_limit;
+        this.quantity = quantity;
+        this.max_delay = max_delay;
+        this.start_time = System.currentTimeMillis();
         
-        //Bukkit.broadcastMessage("Starting to look for locations...");
+        
+        Bukkit.broadcastMessage("Starting to look for locations...");
     }
 
     @Override
@@ -47,20 +56,17 @@ public class Scatter extends BukkitRunnable{
                 final Location loc = findValidLocation(world, radius, distance_limit);
                 if(!isSafe(loc)){
                     quantity++;
-                    
-                    Bukkit.broadcastMessage("Unsafe found");
                     continue;
                 }
-                instance.scatter.locations.add(centerLocation(loc));
-                Bukkit.broadcastMessage("Location " + quantity + " found");
+                locations.add(centerLocation(loc));
+                //Bukkit.broadcastMessage("Location found, " + quantity + " left!");
     
             }
             return;
         }
-        Bukkit.broadcastMessage("All locations found");
-        this.cancel();
-
-
+        Bukkit.broadcastMessage("All locations found\n It took " + ((System.currentTimeMillis() - this.start_time)/1000D) + "s");
+        instance.locations = this.locations;this.cancel();
+        new TeleportTask(instance).runTaskTimerAsynchronously(instance, 0, 20);
     }
 
     Location findScatterLocation(final World world, final Integer radius){
@@ -81,7 +87,7 @@ public class Scatter extends BukkitRunnable{
     boolean validateLocation(final Location location, final int distance_limit){
         if(locations.isEmpty()) return true;
         //Loop through all the other locations and make sure the distance limit is enough.
-        for(final Location loc : instance.scatter.locations) if(location.distance(loc)<= distance_limit)return false;
+        for(final Location loc : locations) if(location.distance(loc)<= distance_limit)return false;
         //If previous checks weren't met then this location must be valid.
         return true;
     }
@@ -89,10 +95,9 @@ public class Scatter extends BukkitRunnable{
     public Location findValidLocation(final World world, final int radius, final int distance_limit){
         final Location loc = findScatterLocation(world, radius);
         //Assert that the location found is valid and don't stop looping until found.
-        if(!validateLocation(loc, distance_limit)){ 
-            Bukkit.broadcastMessage("Not valid location found!");
-            findValidLocation(world, radius, distance_limit);
-        }
+        if(!validateLocation(loc, distance_limit)){
+        findValidLocation(world, radius, distance_limit);
+    }
         //If this point is reached, it means the location returned is valid.
         return loc;
     }
@@ -102,7 +107,6 @@ public class Scatter extends BukkitRunnable{
         for (int i = 0; i < ammount; i++) {
             final Location loc = findValidLocation(world, radius, distance_limit);
             if(!isSafe(loc)){
-                Bukkit.broadcastMessage("Unsafe found");
                 i--;
                 continue;
             }
