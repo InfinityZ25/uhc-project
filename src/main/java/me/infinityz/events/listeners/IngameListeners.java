@@ -5,11 +5,10 @@ import me.infinityz.UHC;
 /**
  * IngameListeners
  */
-public class IngameListeners extends SkeletonListener{
+public class IngameListeners extends SkeletonListener {
 
     public IngameListeners(UHC instance) {
         super(instance);
-        // TODO Auto-generated constructor stub
     }
-    
+
 }

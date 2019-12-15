@@ -9,8 +9,6 @@ public class LobbyListeners extends SkeletonListener {
 
     public LobbyListeners(UHC instance) {
         super(instance);
-        // TODO Auto-generated constructor stub
     }
 
-    
 }

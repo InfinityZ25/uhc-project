@@ -9,8 +9,6 @@ public class SpectatorsListeners extends SkeletonListener {
 
     public SpectatorsListeners(UHC instance) {
         super(instance);
-        // TODO Auto-generated constructor stub
     }
 
-    
 }
