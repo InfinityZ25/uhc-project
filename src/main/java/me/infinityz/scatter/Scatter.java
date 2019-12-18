@@ -14,7 +14,6 @@ import me.infinityz.UHC;
 /**
  * Scatter
  */
-
 public class Scatter extends BukkitRunnable {
 
     private final UHC instance;
