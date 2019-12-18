@@ -13,7 +13,7 @@ import me.infinityz.commands.CommandManager;
 import me.infinityz.events.ListenerManager;
 import me.infinityz.scatter.Scatter;
 import me.infinityz.scoreboard.ScoreboardManager;
-import net.minecraft.server.v1_8_R3.EntitySkeleton;
+import net.minecraft.server.v1_8_R3.EntitySkeleton;;
 
 /**
  * UHC
@@ -26,10 +26,10 @@ public class UHC extends JavaPlugin implements Listener {
     public CommandManager commandManager;
     public Scatter scatter;
     public SkeletonCombatLogger skeleton;
-    
+
     public List<Location> locations;
 
-    public static UHC getInstance(){
+    public static UHC getInstance() {
         return instance;
     }
 
@@ -41,7 +41,7 @@ public class UHC extends JavaPlugin implements Listener {
         this.commandManager = new CommandManager(this);
         this.scatter = new Scatter(this);
 
-        skeleton = new SkeletonCombatLogger(((CraftWorld)Bukkit.getWorlds().get(0)).getHandle());
+        skeleton = new SkeletonCombatLogger(((CraftWorld) Bukkit.getWorlds().get(0)).getHandle());
         skeleton.registerEntity("CombatLogger", 51, EntitySkeleton.class, SkeletonCombatLogger.class);
     }
 
@@ -50,5 +50,4 @@ public class UHC extends JavaPlugin implements Listener {
 
     }
 
-    
 }
