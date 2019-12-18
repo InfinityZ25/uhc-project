@@ -13,7 +13,7 @@ import me.infinityz.commands.CommandManager;
 import me.infinityz.events.ListenerManager;
 import me.infinityz.scatter.Scatter;
 import me.infinityz.scoreboard.ScoreboardManager;
-import net.minecraft.server.v1_8_R3.EntitySkeleton;;
+import net.minecraft.server.v1_8_R3.EntitySkeleton;
 
 /**
  * UHC
