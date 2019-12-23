@@ -19,9 +19,12 @@ public class ScoreboardSign {
 	private String objectiveName;
 
 	/**
-	 * Create a scoreboard sign for a given player and using a specifig objective name
-	 * @param player the player viewing the scoreboard sign
-	 * @param objectiveName the name of the scoreboard sign (displayed at the top of the scoreboard)
+	 * Create a scoreboard sign for a given player and using a specifig objective
+	 * name
+	 * 
+	 * @param player        the player viewing the scoreboard sign
+	 * @param objectiveName the name of the scoreboard sign (displayed at the top of
+	 *                      the scoreboard)
 	 */
 	public ScoreboardSign(Player player, String objectiveName) {
 		this.player = player;
@@ -29,7 +32,8 @@ public class ScoreboardSign {
 	}
 
 	/**
-	 * Send the initial creation packets for this scoreboard sign. Must be called at least once.
+	 * Send the initial creation packets for this scoreboard sign. Must be called at
+	 * least once.
 	 */
 	public void create() {
 		if (created)
@@ -46,8 +50,9 @@ public class ScoreboardSign {
 	}
 
 	/**
-	 * Send the packets to remove this scoreboard sign. A destroyed scoreboard sign must be recreated using {@link ScoreboardSign#create()} in order
-	 * to be used again
+	 * Send the packets to remove this scoreboard sign. A destroyed scoreboard sign
+	 * must be recreated using {@link ScoreboardSign#create()} in order to be used
+	 * again
 	 */
 	public void destroy() {
 		if (!created)
@@ -62,7 +67,9 @@ public class ScoreboardSign {
 	}
 
 	/**
-	 * Change the name of the objective. The name is displayed at the top of the scoreboard.
+	 * Change the name of the objective. The name is displayed at the top of the
+	 * scoreboard.
+	 * 
 	 * @param name the name of the objective, max 32 char
 	 */
 	public void setObjectiveName(String name) {
@@ -72,8 +79,10 @@ public class ScoreboardSign {
 	}
 
 	/**
-	 * Change a scoreboard line and send the packets to the player. Can be called async.
-	 * @param line the number of the line (0 <= line < 15)
+	 * Change a scoreboard line and send the packets to the player. Can be called
+	 * async.
+	 * 
+	 * @param line  the number of the line (0 <= line < 15)
 	 * @param value the new value for the scoreboard line
 	 */
 	public void setLine(int line, String value) {
@@ -89,6 +98,7 @@ public class ScoreboardSign {
 
 	/**
 	 * Remove a given scoreboard line
+	 * 
 	 * @param line the line to remove
 	 */
 	public void removeLine(int line) {
@@ -105,6 +115,7 @@ public class ScoreboardSign {
 
 	/**
 	 * Get the current value for a line
+	 * 
 	 * @param line the line
 	 * @return the content of the line
 	 */
@@ -118,10 +129,12 @@ public class ScoreboardSign {
 
 	/**
 	 * Get the team assigned to a line
+	 * 
 	 * @return the {@link VirtualTeam} used to display this line
 	 */
 	public VirtualTeam getTeam(int line) {
-		if (line > 14 || line < 0)return null;
+		if (line > 14 || line < 0)
+			return null;
 		return getOrCreateTeam(line);
 	}
 
@@ -130,7 +143,8 @@ public class ScoreboardSign {
 	}
 
 	private void sendLine(int line) {
-		if (line > 14 || line < 0 || !created) return;
+		if (line > 14 || line < 0 || !created)
+			return;
 
 		VirtualTeam virtualTeam = getOrCreateTeam(line);
 
@@ -141,12 +155,13 @@ public class ScoreboardSign {
 	}
 
 	private VirtualTeam getOrCreateTeam(int line) {
-		if (lines[line] == null) lines[line] = new VirtualTeam("__fakeScore" + line);
+		if (lines[line] == null)
+			lines[line] = new VirtualTeam("__fakeScore" + line);
 
 		return lines[line];
 	}
 
-	//Factories
+	// Factories
 	private PacketPlayOutScoreboardObjective createObjectivePacket(int mode, String displayName) {
 		PacketPlayOutScoreboardObjective packet = new PacketPlayOutScoreboardObjective();
 		// Objective's name
@@ -188,9 +203,20 @@ public class ScoreboardSign {
 		return new PacketPlayOutScoreboardScore(line);
 	}
 
+	// Recursive method just to make the spacers.
+	public String toSpaceString(int i) {
+		StringBuffer stringBuffer = new StringBuffer();
+		while (i > 0) {
+			stringBuffer.append("§r");
+			i--;
+		}
+		return stringBuffer.toString();
+	}
+
 	/**
-	 * This class is used to manage the content of a line. Advanced users can use it as they want, but they are encouraged to read and understand the
-	 * code before doing so. Use these methods at your own risk.
+	 * This class is used to manage the content of a line. Advanced users can use it
+	 * as they want, but they are encouraged to read and understand the code before
+	 * doing so. Use these methods at your own risk.
 	 */
 	public class VirtualTeam {
 		private final String name;
@@ -217,7 +243,8 @@ public class ScoreboardSign {
 		}
 
 		public void setPrefix(String prefix) {
-			if (this.prefix == null || !this.prefix.equals(prefix)) this.prefixChanged = true;
+			if (this.prefix == null || !this.prefix.equals(prefix))
+				this.prefixChanged = true;
 			this.prefix = prefix;
 		}
 
@@ -226,7 +253,8 @@ public class ScoreboardSign {
 		}
 
 		public void setSuffix(String suffix) {
-			if (this.suffix == null || !this.suffix.equals(prefix)) this.suffixChanged = true;
+			if (this.suffix == null || !this.suffix.equals(prefix))
+				this.suffixChanged = true;
 			this.suffix = suffix;
 		}
 
@@ -261,7 +289,8 @@ public class ScoreboardSign {
 		}
 
 		public void setPlayer(String name) {
-			if (this.currentPlayer == null || !this.currentPlayer.equals(name))this.playerChanged = true;
+			if (this.currentPlayer == null || !this.currentPlayer.equals(name))
+				this.playerChanged = true;
 			this.oldPlayer = this.currentPlayer;
 			this.currentPlayer = name;
 		}
@@ -276,7 +305,8 @@ public class ScoreboardSign {
 			}
 
 			if (first || playerChanged) {
-				if (oldPlayer != null) packets.add(addOrRemovePlayer(4, oldPlayer));
+				if (oldPlayer != null)
+					packets.add(addOrRemovePlayer(4, oldPlayer));
 				packets.add(changePlayer());
 			}
 
@@ -336,7 +366,8 @@ public class ScoreboardSign {
 				setPlayer(value.substring(16, 32));
 				setSuffix(value.substring(32));
 			} else {
-				throw new IllegalArgumentException("Too long value ! Max 48 characters, value was " + value.length() + " !");
+				throw new IllegalArgumentException(
+						"Too long value ! Max 48 characters, value was " + value.length() + " !");
 			}
 		}
 	}

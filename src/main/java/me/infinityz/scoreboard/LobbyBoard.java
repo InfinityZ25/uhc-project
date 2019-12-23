@@ -1,19 +1,22 @@
 package me.infinityz.scoreboard;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import me.infinityz.UHC;
 
-public class UHCBoard extends ScoreboardSign {
-    /*
-     * These are all the values that we need. I could use a HashMap but that
-     * consumes a lot of ram; it's way better to just use ints. The integers are not
-     * initialized and public to avoid writting boiler plate code and not repeat
-     * myself.
-     */
-    public int timer, kills, teamKills, playersLeft, teamsLeft, currentBorder, spectators;
+/**
+ * LobbyBoard
+ */
+public class LobbyBoard extends ScoreboardSign {
+    @Getter
+    @Setter
+    private int host_line, player_line, scenarios_start_line;
 
-    public UHCBoard(final Player player, final String objectiveName, final String... lineStrings) {
+    public LobbyBoard(@NonNull Player player, String objectiveName, @NonNull String... lineStrings) {
         super(player, objectiveName);
         // Assert the lines aren't empty
         assert lineStrings.length > 0;
@@ -31,10 +34,22 @@ public class UHCBoard extends ScoreboardSign {
                 line_name = "§o" + toSpaceString(spacer);
                 spacer++;
             }
+            if (line_name.toLowerCase().contains("<host>")) {
+                this.host_line = i;
+                line_name = line_name.replace("<host>", "Undefined");
+            }
+            if (line_name.toLowerCase().contains("<players>")) {
+                this.player_line = i;
+                line_name = line_name.replace("<players>", Bukkit.getOnlinePlayers().size() + "");
+            }
+            if (line_name.toLowerCase().contains("<scenarios>")) {
+                this.scenarios_start_line = i;
+                line_name = line_name.replace("<scenarios>", " - Vanilla");
+            }
             this.setLine(lineStrings.length - i, line_name);
         }
-        // Call the instance instead of accesing it locally to avoid consuming lots of
-        // ram. Add the scoreboardSign to the scoreboardManager
+
         UHC.getInstance().scoreboardManager.scoreboardMap.put(player.getUniqueId(), this);
     }
+
 }

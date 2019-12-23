@@ -16,6 +16,14 @@
         </repository>
     </repositories>
     <dependencies>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.10</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>jars.me.infinityz</groupId>
             <artifactId>PaperSpigot</artifactId>
@@ -42,7 +50,7 @@
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.3.1</version>
                     <configuration>
-                        <outputDirectory>C:/Users/wwwju/Desktop/s/plugins</outputDirectory>
+                        <outputDirectory>C:/Users/wwwju/Desktop/Paper/plugins</outputDirectory>
                     </configuration>
                 </plugin>
                 <plugin>

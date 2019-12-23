@@ -1,0 +1,4 @@
+<factorypath>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/projectlombok/lombok/1.18.10/lombok-1.18.10.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/jars/me/infinityz/PaperSpigot/1.8.8/PaperSpigot-1.8.8.jar" enabled="true" runInBatchMode="false"/>
+</factorypath>
