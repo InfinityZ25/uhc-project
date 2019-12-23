@@ -1,6 +1,7 @@
 package me.infinityz.events.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -46,6 +47,7 @@ public class LobbyListeners extends SkeletonListener {
         player.getInventory().setArmorContents(null);
         player.setFoodLevel(20);
         player.getInventory().clear();
+        player.setGameMode(GameMode.SURVIVAL);
         player.getActivePotionEffects().forEach(effect -> {
             player.removePotionEffect(effect.getType());
         });
