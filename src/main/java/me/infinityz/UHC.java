@@ -42,6 +42,7 @@ public class UHC extends JavaPlugin implements Listener {
         this.scatter = new Scatter(this);
 
         skeleton = new SkeletonCombatLogger(((CraftWorld) Bukkit.getWorlds().get(0)).getHandle());
+        skeleton = new SkeletonCombatLogger(((CraftWorld) Bukkit.getWorlds().get(0)).getHandle());
         skeleton.registerEntity("CombatLogger", 51, EntitySkeleton.class, SkeletonCombatLogger.class);
     }
 
