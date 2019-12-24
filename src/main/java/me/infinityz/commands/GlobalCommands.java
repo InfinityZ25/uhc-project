@@ -7,8 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
-import org.bukkit.Location;
-
 import me.infinityz.UHC;
 import me.infinityz.border.Border;
 import me.infinityz.scatter.ScatterTask;

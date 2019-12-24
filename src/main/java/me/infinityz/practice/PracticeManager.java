@@ -3,6 +3,7 @@ package me.infinityz.practice;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.World.Environment;
 
 import me.infinityz.UHC;
@@ -20,7 +21,11 @@ public class PracticeManager {
     public PracticeManager(UHC instance) {
         this.instance = instance;
         this.enabled = false;
-        this.practice_world = instance.getServer().createWorld(new WorldCreator("Practice"));
+        this.practice_world = instance.getServer()
+                .createWorld(new WorldCreator("Practice").type(WorldType.FLAT).generateStructures(false));
+        this.practice_world.setGameRuleValue("doMobSpawning", "false");
+        this.practice_world.setGameRuleValue("doFireTick", "false");
+        this.practice_world.setGameRuleValue("doDaylightCycle", "false");
         this.teleport_radius = 100;
         // Move this later
         uhcWorld();
@@ -33,7 +38,6 @@ public class PracticeManager {
         WorldCreator NETHER = new WorldCreator("UHC_nether");
         NETHER.environment(Environment.NETHER);
         NETHER.createWorld();
-
     }
 
     public Location getLocation() {

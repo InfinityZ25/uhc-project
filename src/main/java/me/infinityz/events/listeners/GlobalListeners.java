@@ -1,7 +1,5 @@
 package me.infinityz.events.listeners;
 
-import java.util.Map;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

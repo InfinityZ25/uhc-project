@@ -56,9 +56,8 @@ public class LobbyListeners extends SkeletonListener {
 
             @Override
             public void run() {
-                LobbyBoard lobbyBoard = new LobbyBoard(player, "&bArcadens UHC", "&7Host:&f <host>", "<spacer>",
-                        "&7Players: &f<players>", "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>",
-                        "&b  Arcadens.net  ");
+                new LobbyBoard(player, "&bArcadens UHC", "&7Host:&f <host>", "<spacer>", "&7Players: &f<players>",
+                        "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net  ");
 
             }
 
