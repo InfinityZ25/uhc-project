@@ -6,17 +6,17 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import me.infinityz.combatlogger.CombatLoggerManager;
 import me.infinityz.combatlogger.SkeletonCombatLogger;
 import me.infinityz.commands.CommandManager;
 import me.infinityz.events.ListenerManager;
 import me.infinityz.practice.PracticeManager;
 import me.infinityz.scatter.Scatter;
 import me.infinityz.scoreboard.ScoreboardManager;
-import net.minecraft.server.v1_8_R3.EntitySkeleton;
+import world.WorldManager;
 
 /**
  * UHC
@@ -28,8 +28,11 @@ public class UHC extends JavaPlugin implements Listener {
     public ListenerManager listenerManager;
     public CommandManager commandManager;
     public PracticeManager practiceManager;
+    public CombatLoggerManager combatLoggerManager;
+    public WorldManager worldManager;
     public Scatter scatter;
     public SkeletonCombatLogger skeleton;
+
 
     public List<Location> locations;
 
@@ -43,12 +46,10 @@ public class UHC extends JavaPlugin implements Listener {
         this.scoreboardManager = new ScoreboardManager();
         this.listenerManager = new ListenerManager(this);
         this.commandManager = new CommandManager(this);
+        this.combatLoggerManager = new CombatLoggerManager(this);
+        this.worldManager = new WorldManager(this);
         this.scatter = new Scatter(this);
         this.practiceManager = new PracticeManager(this);
-
-        skeleton = new SkeletonCombatLogger(((CraftWorld) Bukkit.getWorlds().get(0)).getHandle());
-        skeleton.registerEntity("CombatLogger", 51, EntitySkeleton.class, SkeletonCombatLogger.class);
-
     }
 
     @Override
