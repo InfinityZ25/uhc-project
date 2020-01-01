@@ -49,7 +49,7 @@ public class LobbyListeners extends SkeletonListener {
         player.getInventory().clear();
         player.setGameMode(GameMode.SURVIVAL);
         player.getActivePotionEffects().forEach(effect -> {
-            player.removePotionEffect(effect.getType());
+            player.removePotionEffect(effect.getType()); 
         });
         // Start sending the scoreboard in a asynchronus fashion to prevent overload.
         new BukkitRunnable() {
