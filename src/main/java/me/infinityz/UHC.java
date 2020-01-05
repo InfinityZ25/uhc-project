@@ -44,12 +44,13 @@ public class UHC extends JavaPlugin implements Listener {
     public void onEnable() {
         instance = this;
         this.scoreboardManager = new ScoreboardManager();
+        
+        this.practiceManager = new PracticeManager(this);
         this.listenerManager = new ListenerManager(this);
         this.commandManager = new CommandManager(this);
         this.combatLoggerManager = new CombatLoggerManager(this);
         this.worldManager = new WorldManager(this);
         this.scatter = new Scatter(this);
-        this.practiceManager = new PracticeManager(this);
     }
 
     @Override

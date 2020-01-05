@@ -20,5 +20,6 @@ public class ListenerManager {
         this.lobbyListener = new LobbyListeners(instance);
         Bukkit.getPluginManager().registerEvents(globalListener, instance);
         Bukkit.getPluginManager().registerEvents(lobbyListener, instance);
+        Bukkit.getPluginManager().registerEvents(instance.practiceManager, instance);
     }
 }

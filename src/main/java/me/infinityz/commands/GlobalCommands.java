@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
+
 import me.infinityz.UHC;
 import me.infinityz.border.Border;
 import me.infinityz.scatter.ScatterTask;
@@ -75,7 +76,11 @@ public class GlobalCommands implements CommandExecutor {
                 break;
             }
             case "practice": {
-                player.teleport(instance.practiceManager.getLocation());
+                if (instance.practiceManager.isInPractice(player.getUniqueId())) {
+                    instance.practiceManager.leavePractice(player);
+                    break;
+                }
+                instance.practiceManager.joinPractice(player);
                 break;
             }
             case "tpw": {

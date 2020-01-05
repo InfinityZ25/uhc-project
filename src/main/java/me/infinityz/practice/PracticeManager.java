@@ -12,7 +12,10 @@ import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -22,7 +25,7 @@ import me.infinityz.UHC;
 /**
  * PracticeManager
  */
-public class PracticeManager {
+public class PracticeManager implements Listener{
 
     private UHC instance;
     public World practice_world;
@@ -40,55 +43,61 @@ public class PracticeManager {
         this.practice_world.setGameRuleValue("doMobSpawning", "false");
         this.practice_world.setGameRuleValue("doFireTick", "false");
         this.practice_world.setGameRuleValue("doDaylightCycle", "false");
+        this.practice_world.setGameRuleValue("naturalRegeneration", "false");
         this.teleport_radius = 100;
         this.practiceHashSet = new HashSet<>();
 
     }
 
-    public Location getLocation() {
-        Location loc = new Location(practice_world, 0, 0, 0);
-        loc.setX(loc.getX() + Math.random() * teleport_radius * 2.0 - teleport_radius);
-        loc.setZ(loc.getZ() + Math.random() * teleport_radius * 2.0 - teleport_radius);
-        return loc.getWorld().getHighestBlockAt(loc).getLocation().add(0.0, 2.0, 0.0);
-    }
-
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         final Player player = e.getPlayer();
+        e.setQuitMessage("");
         // Check if the player is in the arena
         if (practiceHashSet.contains(player.getUniqueId())) {
             // Kill the player and remove from arena list.
             player.damage(player.getHealth());
-            player.spigot().respawn();
+            player.spigot().respawn();            
             practiceHashSet.remove(player.getUniqueId());
         }
     }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
-        // Handle the health change, the anti respawn screen, try to play the animation
-        // without actually allowing death.
+        // Set the death message to empty so all players won't see it.
+        e.setDeathMessage("");
+        //Make sure player that died is in practice
         if (!isInPractice(e.getEntity().getUniqueId()))
             return;
         final Player player = e.getEntity();
-        // Set health back to 20 and rescatter, maybe send the death message.
-        player.setHealth(20.0D);
-        givePracticeKit(player);
-        player.teleport(getLocation());
-        player.sendMessage("You were killed");
+        //Call the method that takes care of the death of the player
+        handleDeath(e);
         // Ensure the killer is a player and not anyother kindof entity
         if (player.getKiller() == null || !(player.getKiller() instanceof Player))
             return;
         final Player killer = player.getKiller();
         // Now that we know who the killer is, reward them.
         if (isInPractice(killer.getUniqueId())) {
-            // TODO: MAKE THE REWARD SYSTEM, GIVE SOMEETHING TO KILLER
-            killer.sendMessage("You've killed " + player.getCustomName() + "!");
+            // TODO: MAKE THE REWARD SYSTEM, GIVE SOMETHING TO KILLER
+            killer.sendMessage("You've killed " + player.getDisplayName() + "!");
             return;
         }
         killer.sendMessage(
-                "A player that you damaged has died and you technically killed him. Congratulations I guess.");
+                "A player that you damaged has died and you technically did kill him. Congratulations I guess.");
 
+    }
+
+    @EventHandler
+    public void onBucketEvent(PlayerBucketEmptyEvent e) {
+        Bukkit.getScheduler().runTaskLater(instance, () -> {
+            e.getBlockClicked().getRelative(e.getBlockFace()).setType(Material.AIR);
+            e.getPlayer().getInventory().setItem(e.getPlayer().getInventory().first(Material.BUCKET), new ItemStack(e.getBucket()));
+        }, 2L);
+    }
+    
+    @EventHandler
+    public void onBucketFill(PlayerBucketFillEvent e) {
+        e.setCancelled(true);
     }
 
     public void joinPractice(final Player p) {
@@ -102,6 +111,7 @@ public class PracticeManager {
         givePracticeKit(p);
 
         practiceHashSet.add(p.getUniqueId());
+        p.sendMessage("Welcome to practice buddy!");
     }
 
     public void joinPractice(final UUID uuid) {
@@ -117,10 +127,29 @@ public class PracticeManager {
         player.setHealth(20.0D);
         wipePlayer(player);
         player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation().add(0.0, 2.0, 0.0));
+        player.sendMessage("You've left practice!");
     }
 
-    boolean isInPractice(UUID uuid) {
+    public boolean isInPractice(UUID uuid) {
         return practiceHashSet.contains(uuid);
+    }
+
+    void handleDeath(PlayerDeathEvent e) {
+        final Player player = e.getEntity();
+        // Canel items from dropping
+        e.getDrops().clear();
+        // Set the player's health back up to 20.0D to avoid a respawn screen
+        player.setHealth(20.0D);
+        // Use lambda to save lines of code. Verify if player hasn't gone offline and
+        // then proceed.
+        Bukkit.getScheduler().runTaskLater(instance, () -> {
+            if (!player.isOnline())
+                return;
+            player.teleport(getLocation());
+            player.sendMessage("You were killed by " + (player.getKiller() == null ? "mystical causes!" : player.getKiller().getDisplayName() +  "!"));
+            givePracticeKit(player);
+
+        }, 5L);
     }
 
     void givePracticeKit(final Player player) {
@@ -149,10 +178,17 @@ public class PracticeManager {
         player.setExp(0.0F);
         player.setLevel(0);
         player.setHealth(20.0D);
-        player.setSaturation(20.0F);        
+        player.setSaturation(20.0F);
         player.getActivePotionEffects().forEach(effect -> {
             player.removePotionEffect(effect.getType());
         });
+    }
+    
+    public Location getLocation() {
+        Location loc = new Location(practice_world, 0, 0, 0);
+        loc.setX(loc.getX() + Math.random() * teleport_radius * 2.0 - teleport_radius);
+        loc.setZ(loc.getZ() + Math.random() * teleport_radius * 2.0 - teleport_radius);
+        return loc.getWorld().getHighestBlockAt(loc).getLocation().add(0.0, 2.0, 0.0);
     }
 
 }
