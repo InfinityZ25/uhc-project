@@ -10,6 +10,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,11 +24,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import me.infinityz.UHC;
+import net.minecraft.server.v1_8_R3.EntityPlayer;
+import net.minecraft.server.v1_8_R3.MinecraftServer;
+import net.minecraft.server.v1_8_R3.PacketPlayOutEntityStatus;
+import net.minecraft.server.v1_8_R3.PacketPlayOutNamedEntitySpawn;
+import net.minecraft.server.v1_8_R3.PlayerInteractManager;
+import net.minecraft.server.v1_8_R3.WorldServer;
 
 /**
  * PracticeManager
  */
-public class PracticeManager implements Listener{
+public class PracticeManager implements Listener {
 
     private UHC instance;
     public World practice_world;
@@ -57,7 +66,7 @@ public class PracticeManager implements Listener{
         if (practiceHashSet.contains(player.getUniqueId())) {
             // Kill the player and remove from arena list.
             player.damage(player.getHealth());
-            player.spigot().respawn();            
+            player.spigot().respawn();
             practiceHashSet.remove(player.getUniqueId());
         }
     }
@@ -66,11 +75,11 @@ public class PracticeManager implements Listener{
     public void onDeath(PlayerDeathEvent e) {
         // Set the death message to empty so all players won't see it.
         e.setDeathMessage("");
-        //Make sure player that died is in practice
+        // Make sure player that died is in practice
         if (!isInPractice(e.getEntity().getUniqueId()))
             return;
         final Player player = e.getEntity();
-        //Call the method that takes care of the death of the player
+        // Call the method that takes care of the death of the player
         handleDeath(e);
         // Ensure the killer is a player and not anyother kindof entity
         if (player.getKiller() == null || !(player.getKiller() instanceof Player))
@@ -91,10 +100,11 @@ public class PracticeManager implements Listener{
     public void onBucketEvent(PlayerBucketEmptyEvent e) {
         Bukkit.getScheduler().runTaskLater(instance, () -> {
             e.getBlockClicked().getRelative(e.getBlockFace()).setType(Material.AIR);
-            e.getPlayer().getInventory().setItem(e.getPlayer().getInventory().first(Material.BUCKET), new ItemStack(e.getBucket()));
+            e.getPlayer().getInventory().setItem(e.getPlayer().getInventory().first(Material.BUCKET),
+                    new ItemStack(e.getBucket()));
         }, 2L);
     }
-    
+
     @EventHandler
     public void onBucketFill(PlayerBucketFillEvent e) {
         e.setCancelled(true);
@@ -122,12 +132,15 @@ public class PracticeManager implements Listener{
     public void leavePractice(final Player player) {
         if (!isInPractice(player.getUniqueId()))
             return;
-        practiceHashSet.remove(player.getUniqueId());
         player.damage(player.getHealth());
         player.setHealth(20.0D);
-        wipePlayer(player);
         player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation().add(0.0, 2.0, 0.0));
         player.sendMessage("You've left practice!");
+        practiceHashSet.remove(player.getUniqueId());
+
+        Bukkit.getScheduler().runTaskLater(instance, () -> {
+            wipePlayer(player);
+        }, 10L);
     }
 
     public boolean isInPractice(UUID uuid) {
@@ -142,14 +155,40 @@ public class PracticeManager implements Listener{
         player.setHealth(20.0D);
         // Use lambda to save lines of code. Verify if player hasn't gone offline and
         // then proceed.
+
         Bukkit.getScheduler().runTaskLater(instance, () -> {
             if (!player.isOnline())
                 return;
-            player.teleport(getLocation());
-            player.sendMessage("You were killed by " + (player.getKiller() == null ? "mystical causes!" : player.getKiller().getDisplayName() +  "!"));
+            player.sendMessage("You were killed by "
+                    + (player.getKiller() == null ? "mystical causes!" : player.getKiller().getDisplayName() + "!"));
             givePracticeKit(player);
 
         }, 5L);
+
+        playEntityDeathAnimation(player);
+
+        player.teleport(getLocation());
+
+    }
+
+    void playEntityDeathAnimation(Player player) {
+        // Send packet
+        MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
+        WorldServer world = ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle();
+        CraftPlayer craft = (CraftPlayer) player;
+        EntityPlayer npc = new EntityPlayer(server, world, craft.getProfile(), new PlayerInteractManager(world));
+        Location loc = player.getLocation();
+        npc.setPosition(loc.getX(), loc.getY(), loc.getZ());
+
+        PacketPlayOutEntityStatus death = new PacketPlayOutEntityStatus(npc, (byte) 3);
+        Bukkit.getOnlinePlayers().forEach(all -> {
+            if (all == player || all.getWorld() != practice_world)
+                return;
+            CraftPlayer craft2 = (CraftPlayer) all;
+            craft2.getHandle().playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc));
+            craft2.getHandle().playerConnection.sendPacket(death);
+        });
+
     }
 
     void givePracticeKit(final Player player) {
@@ -183,7 +222,7 @@ public class PracticeManager implements Listener{
             player.removePotionEffect(effect.getType());
         });
     }
-    
+
     public Location getLocation() {
         Location loc = new Location(practice_world, 0, 0, 0);
         loc.setX(loc.getX() + Math.random() * teleport_radius * 2.0 - teleport_radius);
