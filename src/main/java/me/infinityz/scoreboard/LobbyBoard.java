@@ -11,10 +11,19 @@ import me.infinityz.UHC;
 /**
  * LobbyBoard
  */
-public class LobbyBoard extends ScoreboardSign {
+public class LobbyBoard extends IScoreboardSign {
     @Getter
     @Setter
     private int host_line, player_line, scenarios_start_line;
+    private String players_line;
+
+    @Override
+    public void update() {
+        super.queueUpdate(player_line, players_line.replace("<players>", Bukkit.getOnlinePlayers().size() + ""));
+        super.update();
+        // Bukkit.broadcastMessage("message");
+
+    }
 
     public LobbyBoard(@NonNull Player player, String objectiveName, @NonNull String... lineStrings) {
         super(player, objectiveName);
@@ -35,15 +44,16 @@ public class LobbyBoard extends ScoreboardSign {
                 spacer++;
             }
             if (line_name.toLowerCase().contains("<host>")) {
-                this.host_line = i;
+                this.host_line = lineStrings.length - i;
                 line_name = line_name.replace("<host>", "Undefined");
             }
             if (line_name.toLowerCase().contains("<players>")) {
-                this.player_line = i;
+                this.players_line = line_name;
+                this.player_line = lineStrings.length - i;
                 line_name = line_name.replace("<players>", Bukkit.getOnlinePlayers().size() + "");
             }
             if (line_name.toLowerCase().contains("<scenarios>")) {
-                this.scenarios_start_line = i;
+                this.scenarios_start_line = lineStrings.length - i;
                 line_name = line_name.replace("<scenarios>", " - Vanilla");
             }
             this.setLine(lineStrings.length - i, line_name);

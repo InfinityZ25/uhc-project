@@ -1,23 +1,34 @@
 package me.infinityz.scoreboard;
 
-import net.md_5.bungee.api.ChatColor;
-import net.minecraft.server.v1_8_R3.*;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import net.md_5.bungee.api.ChatColor;
+import net.minecraft.server.v1_8_R3.IScoreboardCriteria;
+import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardDisplayObjective;
+import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardObjective;
+import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardScore;
+import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardTeam;
+import net.minecraft.server.v1_8_R3.PlayerConnection;
 
 /**
  * @author zyuiop
+ * Editted by InfinityZ25
  */
-public class ScoreboardSign {
+public class IScoreboardSign{
 	private boolean created = false;
 	private final VirtualTeam[] lines = new VirtualTeam[15];
 	private final Player player;
 	private String objectiveName;
-
+	@Getter
+	LinkedHashSet<UpdateObject> updateHashSet;
 	/**
 	 * Create a scoreboard sign for a given player and using a specifig objective
 	 * name
@@ -26,11 +37,11 @@ public class ScoreboardSign {
 	 * @param objectiveName the name of the scoreboard sign (displayed at the top of
 	 *                      the scoreboard)
 	 */
-	public ScoreboardSign(Player player, String objectiveName) {
+	public IScoreboardSign(final Player player, final String objectiveName) {
 		this.player = player;
 		this.objectiveName = ChatColor.translateAlternateColorCodes('&', objectiveName);
+		this.updateHashSet = new LinkedHashSet<>();
 	}
-
 	/**
 	 * Send the initial creation packets for this scoreboard sign. Must be called at
 	 * least once.
@@ -39,7 +50,7 @@ public class ScoreboardSign {
 		if (created)
 			return;
 
-		PlayerConnection player = getPlayer();
+		final PlayerConnection player = getPlayer();
 		player.sendPacket(createObjectivePacket(0, objectiveName));
 		player.sendPacket(setObjectiveSlot());
 		int i = 0;
@@ -59,20 +70,49 @@ public class ScoreboardSign {
 			return;
 
 		getPlayer().sendPacket(createObjectivePacket(1, null));
-		for (VirtualTeam team : lines)
+		for (final VirtualTeam team : lines)
 			if (team != null)
 				getPlayer().sendPacket(team.removeTeam());
 
 		created = false;
 	}
+	/*Use this method to send a future that has to be eventually updated
+	by a data-watcher for the global scoreboards.*/
+	public void queueUpdate(int i, String line) {
+		updateHashSet.add(new UpdateObject(line, i));
+	}
 
+	public void update() {
+		Iterator<UpdateObject> iterator = updateHashSet.iterator();
+		while (iterator.hasNext()) {
+			UpdateObject object = iterator.next();
+			setLine(object.line_id, object.line);
+		}
+	}
+	
+	public void forceUpdate(int line_id, String line) {
+		setLine(line_id, line);
+	}
+
+	class UpdateObject {
+		@Getter
+		String line;
+		@Getter
+		int line_id;
+
+		public UpdateObject(String line, int line_id) {
+			this.line = line;
+			this.line_id = line_id;			
+		}		
+
+	}
 	/**
 	 * Change the name of the objective. The name is displayed at the top of the
 	 * scoreboard.
 	 * 
 	 * @param name the name of the objective, max 32 char
 	 */
-	public void setObjectiveName(String name) {
+	public void setObjectiveName(final String name) {
 		this.objectiveName = ChatColor.translateAlternateColorCodes('&', name);
 		if (created)
 			getPlayer().sendPacket(createObjectivePacket(2, this.objectiveName));
@@ -85,9 +125,9 @@ public class ScoreboardSign {
 	 * @param line  the number of the line (0 <= line < 15)
 	 * @param value the new value for the scoreboard line
 	 */
-	public void setLine(int line, String value) {
-		VirtualTeam team = getOrCreateTeam(line);
-		String old = team.getCurrentPlayer();
+	public void setLine(final int line, final String value) {
+		final VirtualTeam team = getOrCreateTeam(line);
+		final String old = team.getCurrentPlayer();
 
 		if (old != null && created)
 			getPlayer().sendPacket(removeLine(old));
@@ -101,9 +141,9 @@ public class ScoreboardSign {
 	 * 
 	 * @param line the line to remove
 	 */
-	public void removeLine(int line) {
-		VirtualTeam team = getOrCreateTeam(line);
-		String old = team.getCurrentPlayer();
+	public void removeLine(final int line) {
+		final VirtualTeam team = getOrCreateTeam(line);
+		final String old = team.getCurrentPlayer();
 
 		if (old != null && created) {
 			getPlayer().sendPacket(removeLine(old));
@@ -119,7 +159,7 @@ public class ScoreboardSign {
 	 * @param line the line
 	 * @return the content of the line
 	 */
-	public String getLine(int line) {
+	public String getLine(final int line) {
 		if (line > 14)
 			return null;
 		if (line < 0)
@@ -132,7 +172,7 @@ public class ScoreboardSign {
 	 * 
 	 * @return the {@link VirtualTeam} used to display this line
 	 */
-	public VirtualTeam getTeam(int line) {
+	public VirtualTeam getTeam(final int line) {
 		if (line > 14 || line < 0)
 			return null;
 		return getOrCreateTeam(line);
@@ -142,11 +182,11 @@ public class ScoreboardSign {
 		return ((CraftPlayer) player).getHandle().playerConnection;
 	}
 
-	private void sendLine(int line) {
+	private void sendLine(final int line) {
 		if (line > 14 || line < 0 || !created)
 			return;
 
-		VirtualTeam virtualTeam = getOrCreateTeam(line);
+		final VirtualTeam virtualTeam = getOrCreateTeam(line);
 
 		virtualTeam.sendLine().forEach((it) -> getPlayer().sendPacket(it));
 
@@ -154,7 +194,7 @@ public class ScoreboardSign {
 		virtualTeam.reset();
 	}
 
-	private VirtualTeam getOrCreateTeam(int line) {
+	private VirtualTeam getOrCreateTeam(final int line) {
 		if (lines[line] == null)
 			lines[line] = new VirtualTeam("__fakeScore" + line);
 
@@ -162,8 +202,8 @@ public class ScoreboardSign {
 	}
 
 	// Factories
-	private PacketPlayOutScoreboardObjective createObjectivePacket(int mode, String displayName) {
-		PacketPlayOutScoreboardObjective packet = new PacketPlayOutScoreboardObjective();
+	private PacketPlayOutScoreboardObjective createObjectivePacket(final int mode, final String displayName) {
+		final PacketPlayOutScoreboardObjective packet = new PacketPlayOutScoreboardObjective();
 		// Objective's name
 		setField(packet, "a", player.getName());
 
@@ -182,7 +222,7 @@ public class ScoreboardSign {
 	}
 
 	private PacketPlayOutScoreboardDisplayObjective setObjectiveSlot() {
-		PacketPlayOutScoreboardDisplayObjective packet = new PacketPlayOutScoreboardDisplayObjective();
+		final PacketPlayOutScoreboardDisplayObjective packet = new PacketPlayOutScoreboardDisplayObjective();
 		// Slot
 		setField(packet, "a", 1);
 		setField(packet, "b", player.getName());
@@ -190,8 +230,8 @@ public class ScoreboardSign {
 		return packet;
 	}
 
-	private PacketPlayOutScoreboardScore sendScore(String line, int score) {
-		PacketPlayOutScoreboardScore packet = new PacketPlayOutScoreboardScore(line);
+	private PacketPlayOutScoreboardScore sendScore(final String line, final int score) {
+		final PacketPlayOutScoreboardScore packet = new PacketPlayOutScoreboardScore(line);
 		setField(packet, "b", player.getName());
 		setField(packet, "c", score);
 		setField(packet, "d", PacketPlayOutScoreboardScore.EnumScoreboardAction.CHANGE);
@@ -199,13 +239,13 @@ public class ScoreboardSign {
 		return packet;
 	}
 
-	private PacketPlayOutScoreboardScore removeLine(String line) {
+	private PacketPlayOutScoreboardScore removeLine(final String line) {
 		return new PacketPlayOutScoreboardScore(line);
 	}
 
 	// Recursive method just to make the spacers.
 	public String toSpaceString(int i) {
-		StringBuffer stringBuffer = new StringBuffer();
+		final StringBuffer stringBuffer = new StringBuffer();
 		while (i > 0) {
 			stringBuffer.append("§r");
 			i--;
@@ -224,13 +264,13 @@ public class ScoreboardSign {
 		private boolean prefixChanged, suffixChanged, playerChanged = false;
 		private boolean first = true;
 
-		private VirtualTeam(String name, String prefix, String suffix) {
+		private VirtualTeam(final String name, final String prefix, final String suffix) {
 			this.name = name;
 			this.prefix = prefix;
 			this.suffix = suffix;
 		}
 
-		private VirtualTeam(String name) {
+		private VirtualTeam(final String name) {
 			this(name, "", "");
 		}
 
@@ -242,7 +282,7 @@ public class ScoreboardSign {
 			return prefix;
 		}
 
-		public void setPrefix(String prefix) {
+		public void setPrefix(final String prefix) {
 			if (this.prefix == null || !this.prefix.equals(prefix))
 				this.prefixChanged = true;
 			this.prefix = prefix;
@@ -252,14 +292,14 @@ public class ScoreboardSign {
 			return suffix;
 		}
 
-		public void setSuffix(String suffix) {
+		public void setSuffix(final String suffix) {
 			if (this.suffix == null || !this.suffix.equals(prefix))
 				this.suffixChanged = true;
 			this.suffix = suffix;
 		}
 
-		private PacketPlayOutScoreboardTeam createPacket(int mode) {
-			PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
+		private PacketPlayOutScoreboardTeam createPacket(final int mode) {
+			final PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
 			setField(packet, "a", name);
 			setField(packet, "h", mode);
 			setField(packet, "b", "");
@@ -281,14 +321,14 @@ public class ScoreboardSign {
 		}
 
 		public PacketPlayOutScoreboardTeam removeTeam() {
-			PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
+			final PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
 			setField(packet, "a", name);
 			setField(packet, "h", 1);
 			first = true;
 			return packet;
 		}
 
-		public void setPlayer(String name) {
+		public void setPlayer(final String name) {
 			if (this.currentPlayer == null || !this.currentPlayer.equals(name))
 				this.playerChanged = true;
 			this.oldPlayer = this.currentPlayer;
@@ -296,7 +336,7 @@ public class ScoreboardSign {
 		}
 
 		public Iterable<PacketPlayOutScoreboardTeam> sendLine() {
-			List<PacketPlayOutScoreboardTeam> packets = new ArrayList<>();
+			final List<PacketPlayOutScoreboardTeam> packets = new ArrayList<>();
 
 			if (first) {
 				packets.add(createTeam());
@@ -328,16 +368,16 @@ public class ScoreboardSign {
 		}
 
 		@SuppressWarnings("unchecked")
-		public PacketPlayOutScoreboardTeam addOrRemovePlayer(int mode, String playerName) {
-			PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
+		public PacketPlayOutScoreboardTeam addOrRemovePlayer(final int mode, final String playerName) {
+			final PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
 			setField(packet, "a", name);
 			setField(packet, "h", mode);
 
 			try {
-				Field f = packet.getClass().getDeclaredField("g");
+				final Field f = packet.getClass().getDeclaredField("g");
 				f.setAccessible(true);
 				((List<String>) f.get(packet)).add(playerName);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				e.printStackTrace();
 			}
 
@@ -352,7 +392,7 @@ public class ScoreboardSign {
 			return getPrefix() + getCurrentPlayer() + getSuffix();
 		}
 
-		public void setValue(String value) {
+		public void setValue(final String value) {
 			if (value.length() <= 16) {
 				setPrefix("");
 				setSuffix("");
@@ -372,12 +412,12 @@ public class ScoreboardSign {
 		}
 	}
 
-	private void setField(Object edit, String fieldName, Object value) {
+	private void setField(final Object edit, final String fieldName, final Object value) {
 		try {
-			Field field = edit.getClass().getDeclaredField(fieldName);
+			final Field field = edit.getClass().getDeclaredField(fieldName);
 			field.setAccessible(true);
 			field.set(edit, value);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
