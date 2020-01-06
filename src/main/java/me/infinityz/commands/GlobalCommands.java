@@ -87,6 +87,15 @@ public class GlobalCommands implements CommandExecutor {
                 player.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
                 break;
             }
+            case "scen": {
+                instance.scoreboardManager.scenariosSet.add(args[1]);
+                break;
+            }
+            case "scenrm": {
+                
+                instance.scoreboardManager.scenariosSet.remove(args[1]);
+                break;
+            }
 
             }
 

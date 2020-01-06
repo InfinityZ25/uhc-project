@@ -50,7 +50,6 @@ public class IScoreboardSign {
 	public void create() {
 		if (created)
 			return;
-
 		final PlayerConnection player = getPlayer();
 		player.sendPacket(createObjectivePacket(0, objectiveName));
 		player.sendPacket(setObjectiveSlot());
@@ -74,7 +73,6 @@ public class IScoreboardSign {
 		for (final VirtualTeam team : lines)
 			if (team != null)
 				getPlayer().sendPacket(team.removeTeam());
-
 		created = false;
 	}
 
@@ -83,35 +81,50 @@ public class IScoreboardSign {
 	 * data-watcher for the global scoreboards.
 	 */
 	public void queueUpdate(int i, String line) {
+		//Call from outside with super as a prefix.
 		updateHashSet.add(new UpdateObject(line, i));
 	}
 
+	/*Update method, gets called automatically by the scoreboard manager. 
+	 *Every scoreboard has to call this method at least once.
+	 *Never forget to call it. I'm begging you lol.
+	 */
 	public void update() {
+		//Obtain a iteratable object from the organized HashSet
 		Iterator<UpdateObject> iterator = updateHashSet.iterator();
+		//Loop through the iterable with a while loop for as long as there is something in #hasNext().
 		while (iterator.hasNext()) {
+			//Get the updateObject as final to ensure it is unmutable and assert it's null safe.
 			final UpdateObject object = iterator.next();
-			setLine(object.line_id, object.line);
+			assert object != null;
+			//Remove it from the queue before trying to send it so that it gets send regarless of content.	
 			updateHashSet.remove(object);
+			//Finally call the recursive method to send the packet.
+			setLine(object.line_id, object.line);
+			object.destroy();
 		}
 	}
-
+	//Method that allows an update to happen instantly instead of getting queued for update in the next loop cycle.
 	public void forceUpdate(int line_id, String line) {
 		setLine(line_id, line);
 	}
-
+	//Inner class that witholds all necesary data to 
 	class UpdateObject {
 		@Getter
 		String line;
 		@Getter
 		int line_id;
-
+		//The main method. Easy to create and understand
 		public UpdateObject(String line, int line_id) {
 			this.line = line;
 			this.line_id = line_id;
 		}
-
+		//Destroy method to help out the garbage collector a little bit.
+		public void destroy() {
+			this.line = null;
+			this.line_id = -1;
+		}		
 	}
-
 	/**
 	 * Change the name of the objective. The name is displayed at the top of the
 	 * scoreboard.

@@ -1,11 +1,13 @@
 package me.infinityz.scoreboard;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 
+import lombok.Getter;
 import me.infinityz.UHC;
 
 /**
@@ -14,9 +16,13 @@ import me.infinityz.UHC;
 public class ScoreboardManager {
     public Map<UUID, IScoreboardSign> scoreboardMap;
     public boolean global_update;
+    @Getter
+    public HashSet<String> scenariosSet;
 
     public ScoreboardManager() {
         scoreboardMap = new HashMap<>();
+        scenariosSet = new HashSet<>();
+
         this.global_update = true;
         loop();
     }
@@ -28,6 +34,6 @@ public class ScoreboardManager {
             scoreboardMap.forEach((uuid, sb) -> {
                 sb.update();
             });
-        }, 20L, 5L);
+        }, 20L, 2L);
     }
 }
