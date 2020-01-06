@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 
 import me.infinityz.UHC;
 
-
 /**
  * ScoreboardManager
  */
@@ -25,10 +24,10 @@ public class ScoreboardManager {
     void loop() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(UHC.getInstance(), () -> {
             if (!global_update)
-                return;           
+                return;
             scoreboardMap.forEach((uuid, sb) -> {
-                sb.update();                
+                sb.update();
             });
-        }, 20L, 20L);
+        }, 20L, 5L);
     }
 }

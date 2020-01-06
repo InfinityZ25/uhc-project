@@ -19,16 +19,16 @@ import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardTeam;
 import net.minecraft.server.v1_8_R3.PlayerConnection;
 
 /**
- * @author zyuiop
- * Editted by InfinityZ25
+ * @author zyuiop Editted by InfinityZ25
  */
-public class IScoreboardSign{
+public class IScoreboardSign {
 	private boolean created = false;
 	private final VirtualTeam[] lines = new VirtualTeam[15];
 	private final Player player;
 	private String objectiveName;
 	@Getter
 	LinkedHashSet<UpdateObject> updateHashSet;
+
 	/**
 	 * Create a scoreboard sign for a given player and using a specifig objective
 	 * name
@@ -42,6 +42,7 @@ public class IScoreboardSign{
 		this.objectiveName = ChatColor.translateAlternateColorCodes('&', objectiveName);
 		this.updateHashSet = new LinkedHashSet<>();
 	}
+
 	/**
 	 * Send the initial creation packets for this scoreboard sign. Must be called at
 	 * least once.
@@ -76,8 +77,11 @@ public class IScoreboardSign{
 
 		created = false;
 	}
-	/*Use this method to send a future that has to be eventually updated
-	by a data-watcher for the global scoreboards.*/
+
+	/*
+	 * Use this method to send a future that has to be eventually updated by a
+	 * data-watcher for the global scoreboards.
+	 */
 	public void queueUpdate(int i, String line) {
 		updateHashSet.add(new UpdateObject(line, i));
 	}
@@ -85,11 +89,12 @@ public class IScoreboardSign{
 	public void update() {
 		Iterator<UpdateObject> iterator = updateHashSet.iterator();
 		while (iterator.hasNext()) {
-			UpdateObject object = iterator.next();
+			final UpdateObject object = iterator.next();
 			setLine(object.line_id, object.line);
+			updateHashSet.remove(object);
 		}
 	}
-	
+
 	public void forceUpdate(int line_id, String line) {
 		setLine(line_id, line);
 	}
@@ -102,10 +107,11 @@ public class IScoreboardSign{
 
 		public UpdateObject(String line, int line_id) {
 			this.line = line;
-			this.line_id = line_id;			
-		}		
+			this.line_id = line_id;
+		}
 
 	}
+
 	/**
 	 * Change the name of the objective. The name is displayed at the top of the
 	 * scoreboard.
