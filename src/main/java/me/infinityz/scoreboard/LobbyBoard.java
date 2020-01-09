@@ -19,7 +19,7 @@ public class LobbyBoard extends IScoreboardSign {
 
     @Override
     public void update() {
-        super.queueUpdate(player_line, players_line.replace("<players>", Bukkit.getOnlinePlayers().size() + ""));
+        super.queueUpdate(player_line, players_line.replace("<players>", System.currentTimeMillis() + ""));
         super.update();
         // Bukkit.broadcastMessage("message");
         // Important: #getClass()#getSimpleName() returns a string with the name of the

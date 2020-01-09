@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.minecraft.server.v1_8_R3.IScoreboardCriteria;
+import net.minecraft.server.v1_8_R3.Packet;
 import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardDisplayObjective;
 import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardObjective;
 import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardScore;
@@ -100,7 +101,7 @@ public class IScoreboardSign {
 			//Remove it from the queue before trying to send it so that it gets send regarless of content.	
 			updateHashSet.remove(object);
 			//Finally call the recursive method to send the packet.
-			setLine(object.line_id, object.line);
+			queueSetLine(object.line_id, object.line);
 			object.destroy();
 		}
 	}
@@ -153,6 +154,20 @@ public class IScoreboardSign {
 
 		team.setValue(ChatColor.translateAlternateColorCodes('&', value));
 		sendLine(line);
+	}
+
+	public void queueSetLine(final int line, final String value) {
+		final VirtualTeam team = getOrCreateTeam(line);
+		final String old = team.getCurrentPlayer();
+		List<Packet> packets = new ArrayList<>();
+
+		if (old != null && created) {
+			packets.add(removeLine(old));			
+		}
+		
+		team.setValue(ChatColor.translateAlternateColorCodes('&', value));
+		packets.addAll(queueSendLine(line));
+		packets.forEach((it)-> getPlayer().sendPacket(it));
 	}
 
 	/**
@@ -211,6 +226,21 @@ public class IScoreboardSign {
 
 		getPlayer().sendPacket(sendScore(virtualTeam.getCurrentPlayer(), line));
 		virtualTeam.reset();
+	}
+
+	public List<Packet> queueSendLine(final int line) {
+		if (line > 14 || line < 0 || !created)
+			return null;
+
+		List<Packet> packet = new ArrayList<>();
+		final VirtualTeam virtualTeam = getOrCreateTeam(line);
+
+		virtualTeam.sendLine().forEach((it) -> packet.add(it));
+		packet.add(sendScore(virtualTeam.getCurrentPlayer(), line));
+
+		virtualTeam.reset();
+
+		return packet;
 	}
 
 	private VirtualTeam getOrCreateTeam(final int line) {
