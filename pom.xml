@@ -16,14 +16,12 @@
         </repository>
     </repositories>
     <dependencies>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.10</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>jars.me.infinityz</groupId>
             <artifactId>PaperSpigot</artifactId>

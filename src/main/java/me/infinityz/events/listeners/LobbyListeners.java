@@ -1,5 +1,7 @@
 package me.infinityz.events.listeners;
 
+import java.util.Random;
+
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -14,10 +16,9 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.infinityz.UHC;
-import me.infinityz.scoreboard.LobbyBoard;
+import me.infinityz.scoreboard.ScoreboardSign;
 import net.md_5.bungee.api.ChatColor;
 
 /**
@@ -49,19 +50,43 @@ public class LobbyListeners extends SkeletonListener {
         player.getInventory().clear();
         player.setGameMode(GameMode.SURVIVAL);
         player.getActivePotionEffects().forEach(effect -> {
-            player.removePotionEffect(effect.getType()); 
+            player.removePotionEffect(effect.getType());
         });
         // Start sending the scoreboard in a asynchronus fashion to prevent overload.
-        new BukkitRunnable() {
 
-            @Override
-            public void run() {
-                new LobbyBoard(player, "&bArcadens UHC", "&7Host:&f <host>", "<spacer>", "&7Players: &f<players>",
-                        "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net  ");
+        ScoreboardSign scoreboardSign = new ScoreboardSign(player, "&bArcadens UHC");
+        scoreboardSign.create();
+        scoreboardSign.setLine(8, "&7Host: &f<host>");
+        scoreboardSign.setLine(7, "");
+        scoreboardSign.setLine(6, "&7Players: &f<players>");
+        scoreboardSign.setLine(5, "");
+        scoreboardSign.setLine(4, "&7Scenarios:");
+        scoreboardSign.setLine(3, " - Vanilla");
+        scoreboardSign.setLine(2, "");
+        scoreboardSign.setLine(1, "&b  Arcadens.net  ");
+        Bukkit.getScheduler().runTaskTimerAsynchronously(instance, () -> {
+            String str = "&7Players:&f " + System.currentTimeMillis();
+            scoreboardSign.setLine(8, "&7Host: &f" + player.getName());
+            scoreboardSign.setLine(6, str);
 
-            }
+            Long l = new Random().nextLong();
+            Long l2 = new Random().nextLong();
+            String stt = " - " + (l > 0 ? l : (l) * -1) + "" + (l2 > 0 ? l2 : (l2) * -1);
+            scoreboardSign.setLine(3, stt);
+            scoreboardSign.updatePlayerOrder();
 
-        }.runTaskAsynchronously(instance);
+        }, 1L, 10L);
+        /*
+         * new BukkitRunnable() {
+         * 
+         * @Override public void run() { new LobbyBoard(player, "&bArcadens UHC",
+         * "&7Host:&f <host>", "<spacer>", "&7Players: &f<players>", "<spacer>",
+         * "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net  ");
+         * 
+         * }
+         * 
+         * }.runTaskAsynchronously(instance);
+         */
     }
 
     @EventHandler

@@ -34,6 +34,6 @@ public class ScoreboardManager {
             scoreboardMap.forEach((uuid, sb) -> {
                 sb.update();
             });
-        }, 20L, 2L);
+        }, 20L, 1L);
     }
 }

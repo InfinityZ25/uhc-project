@@ -167,7 +167,8 @@ public class IScoreboardSign {
 		
 		team.setValue(ChatColor.translateAlternateColorCodes('&', value));
 		packets.addAll(queueSendLine(line));
-		packets.forEach((it)-> getPlayer().sendPacket(it));
+		packets.forEach((it) -> getPlayer().sendPacket(it));
+		
 	}
 
 	/**
@@ -461,7 +462,7 @@ public class IScoreboardSign {
 		}
 	}
 
-	private void setField(final Object edit, final String fieldName, final Object value) {
+	public static void setField(final Object edit, final String fieldName, final Object value) {
 		try {
 			final Field field = edit.getClass().getDeclaredField(fieldName);
 			field.setAccessible(true);
