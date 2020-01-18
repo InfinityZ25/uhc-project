@@ -1,5 +1,7 @@
 package me.infinityz.commands;
 
+import java.lang.reflect.Field;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -10,6 +12,7 @@ import org.bukkit.entity.Skeleton.SkeletonType;
 
 import me.infinityz.UHC;
 import me.infinityz.border.Border;
+import me.infinityz.protocol.Reflection;
 import me.infinityz.scatter.ScatterTask;
 import me.infinityz.scatter.TeleportTask;
 import net.md_5.bungee.api.ChatColor;
@@ -94,6 +97,39 @@ public class GlobalCommands implements CommandExecutor {
             case "scenrm": {
                 
                 instance.scoreboardManager.scenariosSet.remove(args[1]);
+                break;
+            }
+
+            case "show_enchants":{
+                
+                Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
+                try {
+                    Field field = tableClass.getDeclaredField("show_enchants");
+                    field.setAccessible(true);
+                    field.set(null, Boolean.parseBoolean(args[1]));
+                    
+                } catch (Exception e) {
+                    //TODO: handle exception
+                }
+                break;
+            }
+
+            case "old_levels":{
+                
+                Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
+                try {
+                    Field field = tableClass.getDeclaredField("old_levels");
+                    field.setAccessible(true);
+                    field.set(null, Boolean.parseBoolean(args[1]));
+                    
+                } catch (Exception e) {
+                    //TODO: handle exception
+                }
+                break;
+            }
+            case "calc":{
+                
+
                 break;
             }
 
