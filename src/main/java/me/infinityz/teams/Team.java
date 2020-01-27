@@ -1,51 +1,62 @@
 package me.infinityz.teams;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.UUID;
 
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * Team
  */
 public class Team {
-    // Possibly use an array instead of a List to save memory.
-    private List<UUID> members;
-    private UUID teamLeader;
-    private String team_name;
+    UUID team_leader;
+    ArrayList<UUID> team_members;
+    String team_name;
 
-    // Initialize the team with the name and the array of players that'll be part of
-    // the team. Add non-null check later
-    @Nonnull
-    public Team(String team_name, Player... players) {
+    //Recursive constructor to allow the usage of player instead of uuid
+    public Team(Player player, String team_name){
+        this(player.getUniqueId(), team_name);
+    }
+    //Constructor, initializes everything.
+    public Team(UUID uuid, String team_name){
+        this.team_leader = uuid;
+        //Adds the team leader to the team members just to make it easier for later on.
+        this.team_members = new ArrayList<>(Collections.singleton(uuid));
         this.team_name = team_name;
-        this.members = new ArrayList<>();
-        // Might cause exception, check later.
-        while (players.length > 0) {
-            this.members.add(players[0].getUniqueId());
-            ArrayUtils.remove(players, 0);
+    }
+    //Piece of code that returns an online Player is they're a team member. Otherwise a null.
+    public Player getMember(UUID uuid) {
+        while (team_members.iterator().hasNext()) {
+            if (team_members.contains(uuid))
+                return Bukkit.getPlayer(uuid);
         }
+        return null;
     }
-
-    // Get online team mates, use as a notifier method.
-    public List<Player> getOnlineMates() {
-        List<Player> players = new ArrayList<>();
-        members.forEach(uuid -> {
+    //Method to send message to online members. It uses BaseComponent to allow clickables.
+    public void sendTeamMessage(BaseComponent... component){
+        team_members.forEach(uuid ->{
             Player player = Bukkit.getPlayer(uuid);
-            if (player == null || !player.isOnline())
-                return;
-            players.add(player);
+            if(player == null || !player.isOnline())return;
+            player.sendMessage(component);
         });
-        return players;
+    }
+    //Recursive method to use string instead of BaseComponents
+    public void sendTeamMessage(String string){
+        sendTeamMessage(TextComponent.fromLegacyText(string));
+    }
+    //Boolean true is it can be completed, false if it can't.
+    public boolean changeTeamLeader(Player player, UUID new_leader){
+        if(player.getUniqueId() != team_leader)return false;
+        if(!team_members.contains(new_leader)) return false;
+        this.team_leader = new_leader;
+        return true;
     }
 
-    public void changeTeamName(String str) {
-
-    }
-
-    // Get name of all team members
+    //Make the invite method?
 
 }
