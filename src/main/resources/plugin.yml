@@ -1,6 +1,8 @@
 name: ${project.artifactId}
 main: ${project.groupId}.UHC
-version: 2019.12.1.1-A
+version: 2020.1.27.1-RC-A
 
 commands:
   uhc:
+  whitelist:
+    aliases: [wl]

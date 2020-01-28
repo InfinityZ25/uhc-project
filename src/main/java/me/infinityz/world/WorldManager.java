@@ -1,4 +1,4 @@
-package world;
+package me.infinityz.world;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
