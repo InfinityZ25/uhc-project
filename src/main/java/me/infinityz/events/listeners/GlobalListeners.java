@@ -34,6 +34,8 @@ import org.bukkit.util.Vector;
 
 import me.infinityz.UHC;
 import me.infinityz.protocol.Reflection;
+import me.infinityz.scenarios.events.ScenarioDisabledEvent;
+import me.infinityz.scenarios.events.ScenarioEnabledEvent;
 
 /**
  * GlobalListeners
@@ -134,6 +136,16 @@ public class GlobalListeners extends SkeletonListener {
         } else {
             processNetherPortalEvent(event);
         }
+    }
+
+    @EventHandler
+    public void scenEnable(ScenarioEnabledEvent e){
+        Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + "has been enabled");
+    }
+
+    @EventHandler
+    public void scenDisable(ScenarioDisabledEvent e){
+        Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + "has been disabled");
     }
 
     private void processNetherPortalEvent(final PlayerPortalEvent event) {

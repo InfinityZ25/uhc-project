@@ -15,6 +15,9 @@ import me.infinityz.border.Border;
 import me.infinityz.protocol.Reflection;
 import me.infinityz.scatter.ScatterTask;
 import me.infinityz.scatter.TeleportTask;
+import me.infinityz.scenarios.IScenario;
+import me.infinityz.scenarios.events.ScenarioDisabledEvent;
+import me.infinityz.scenarios.events.ScenarioEnabledEvent;
 import net.md_5.bungee.api.ChatColor;
 
 /**
@@ -95,40 +98,47 @@ public class GlobalCommands implements CommandExecutor {
                 break;
             }
             case "scenrm": {
-                
+
                 instance.scoreboardManager.scenariosSet.remove(args[1]);
                 break;
             }
 
-            case "show_enchants":{
-                
+            case "show_enchants": {
+
                 Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
                 try {
                     Field field = tableClass.getDeclaredField("show_enchants");
                     field.setAccessible(true);
                     field.set(null, Boolean.parseBoolean(args[1]));
-                    
+
                 } catch (Exception e) {
-                    //TODO: handle exception
+                    // TODO: handle exception
                 }
                 break;
             }
 
-            case "old_levels":{
-                
+            case "old_levels": {
+
                 Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
                 try {
                     Field field = tableClass.getDeclaredField("old_levels");
                     field.setAccessible(true);
                     field.set(null, Boolean.parseBoolean(args[1]));
-                    
+
                 } catch (Exception e) {
-                    //TODO: handle exception
+                    // TODO: handle exception
                 }
                 break;
             }
-            case "calc":{
-                
+            case "scenario": {
+                IScenario scenario = instance.scenariosManager.scenarioMap.get(args[1]);
+                if (scenario.enabled) {
+                    scenario.disableScenario();
+                    Bukkit.getPluginManager().callEvent(new ScenarioDisabledEvent(scenario, (Player) sender));
+                } else {
+                    scenario.enableScenario();
+                    Bukkit.getPluginManager().callEvent(new ScenarioEnabledEvent(scenario, (Player) sender));
+                }
 
                 break;
             }

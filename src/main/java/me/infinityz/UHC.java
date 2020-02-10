@@ -16,6 +16,7 @@ import me.infinityz.events.ListenerManager;
 import me.infinityz.practice.PracticeManager;
 import me.infinityz.protocol.ProtocolManager;
 import me.infinityz.scatter.Scatter;
+import me.infinityz.scenarios.ScenariosManager;
 import me.infinityz.scoreboard.ScoreboardManager;
 import me.infinityz.whitelist.WhitelistManager;
 import me.infinityz.world.WorldManager;
@@ -36,6 +37,7 @@ public class UHC extends JavaPlugin implements Listener {
     public SkeletonCombatLogger skeleton;
     public ProtocolManager protocolManager;
     public WhitelistManager whitelistManager;
+    public ScenariosManager scenariosManager;
     //Deprecated, move this out of here 
     public List<Location> locations;
 
@@ -55,6 +57,7 @@ public class UHC extends JavaPlugin implements Listener {
         this.worldManager = new WorldManager(this);
         this.scatter = new Scatter(this);
         this.protocolManager = new ProtocolManager(this);
+        this.scenariosManager = new ScenariosManager();
     }
 
     @Override
