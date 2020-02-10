@@ -16,4 +16,9 @@ public class WhitelistorPlayer {
         this.whitelisted_uuids = new UUID[10];
         ArrayUtils.add(this.whitelisted_uuids, whitelited_uuid);
     }
+
+    public WhitelistorPlayer(UUID player_uuid){
+        this.player_uuid = player_uuid;
+        this.whitelisted_uuids = new UUID[10];
+    }
 }

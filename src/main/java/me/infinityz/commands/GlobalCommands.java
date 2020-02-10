@@ -112,7 +112,6 @@ public class GlobalCommands implements CommandExecutor {
                     field.set(null, Boolean.parseBoolean(args[1]));
 
                 } catch (Exception e) {
-                    // TODO: handle exception
                 }
                 break;
             }
@@ -126,7 +125,6 @@ public class GlobalCommands implements CommandExecutor {
                     field.set(null, Boolean.parseBoolean(args[1]));
 
                 } catch (Exception e) {
-                    // TODO: handle exception
                 }
                 break;
             }

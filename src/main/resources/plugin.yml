@@ -6,3 +6,4 @@ commands:
   uhc:
   whitelist:
     aliases: [wl]
+    usage: "Correct usage: /whitelist <add:remove> <Player>"

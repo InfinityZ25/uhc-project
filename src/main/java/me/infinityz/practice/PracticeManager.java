@@ -87,7 +87,7 @@ public class PracticeManager implements Listener {
         final Player killer = player.getKiller();
         // Now that we know who the killer is, reward them.
         if (isInPractice(killer.getUniqueId())) {
-            // TODO: MAKE THE REWARD SYSTEM, GIVE SOMETHING TO KILLER
+            // MAKE THE REWARD SYSTEM, GIVE SOMETHING TO KILLER
             killer.sendMessage("You've killed " + player.getDisplayName() + "!");
             return;
         }

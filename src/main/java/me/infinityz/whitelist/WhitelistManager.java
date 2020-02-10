@@ -10,11 +10,13 @@ import me.infinityz.UHC;
  * WhitelistManager
  */
 public class WhitelistManager {
+    public boolean whitelist_enabled;
     public List<UUID> whitelist;
     public List<WhitelistorPlayer> whitelistorPlayers;
 
     public WhitelistManager(UHC instance) {
         whitelist = new ArrayList<>();
+        whitelist_enabled = true;
         whitelistorPlayers = new ArrayList<>();
         instance.getCommand("whitelist").setExecutor(new WhitelistCMD(this));
     }

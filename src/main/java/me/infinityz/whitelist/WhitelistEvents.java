@@ -18,6 +18,7 @@ public class WhitelistEvents  implements Listener{
     
     @EventHandler
     public void onLogin(PlayerLoginEvent event) {
+        if(!whitelistManager.whitelist_enabled)return;
         final Player player = event.getPlayer();
         if (whitelistManager.whitelist.contains(player.getUniqueId()) || player.hasPermission("uhc.whitelist.bypass"))
             event.allow();
