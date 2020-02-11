@@ -140,6 +140,24 @@ public class GlobalCommands implements CommandExecutor {
 
                 break;
             }
+            case "rate":{
+                switch(args[1].toLowerCase()){
+                    case "apple":{
+                        Bukkit.broadcastMessage("Applec rate: " + instance.gameConfigManager.gameConfig.apple_rate);
+                        instance.gameConfigManager.gameConfig.apple_rate = Double.parseDouble(args[2]);
+                        Bukkit.broadcastMessage("New Apple rate: " + instance.gameConfigManager.gameConfig.apple_rate);
+                        break;
+                    }
+                    case "flint":{
+                        Bukkit.broadcastMessage("Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
+                        
+                        instance.gameConfigManager.gameConfig.flint_rate = Double.parseDouble(args[2]);
+                        Bukkit.broadcastMessage("New Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
+                        break;
+                    }
+                }
+                break;
+            }
 
             }
 

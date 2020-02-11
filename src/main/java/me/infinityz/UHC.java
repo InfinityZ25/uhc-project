@@ -12,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.infinityz.combatlogger.CombatLoggerManager;
 import me.infinityz.combatlogger.SkeletonCombatLogger;
 import me.infinityz.commands.CommandManager;
+import me.infinityz.configuration.GameConfigManager;
 import me.infinityz.events.ListenerManager;
 import me.infinityz.practice.PracticeManager;
 import me.infinityz.protocol.ProtocolManager;
@@ -38,6 +39,7 @@ public class UHC extends JavaPlugin implements Listener {
     public ProtocolManager protocolManager;
     public WhitelistManager whitelistManager;
     public ScenariosManager scenariosManager;
+    public GameConfigManager gameConfigManager;
     //Deprecated, move this out of here 
     public List<Location> locations;
 
@@ -58,6 +60,7 @@ public class UHC extends JavaPlugin implements Listener {
         this.scatter = new Scatter(this);
         this.protocolManager = new ProtocolManager(this);
         this.scenariosManager = new ScenariosManager();
+        this.gameConfigManager = new GameConfigManager();
     }
 
     @Override
