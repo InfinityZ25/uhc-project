@@ -1,11 +1,7 @@
 package me.infinityz.protocol;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import io.netty.channel.Channel;
@@ -60,13 +56,9 @@ public class ProtocolManager {
                 } else if (windowData.isInstance(packet)) {
                         System.out.println(windowID.get(packet));
                         System.out.println(value.get(packet));
-                        System.out.println(othervalue.get(packet));
-                        
+                        System.out.println(othervalue.get(packet));                        
                     
-                } else if(experienceClass.isInstance(packet)){
-                    System.out.println("Packet");
-                    
-                }          
+                }         
 
                 return super.onPacketOutAsync(reciever, channel, packet);
             }

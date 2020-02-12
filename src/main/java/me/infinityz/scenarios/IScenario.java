@@ -33,6 +33,8 @@ public class IScenario implements Listener{
         this.enabled = false;
      }
 
+     //Add editor item and display name, display lore, and overchat lore.
+
 
 
 }

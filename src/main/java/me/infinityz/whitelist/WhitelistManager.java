@@ -11,14 +11,15 @@ import me.infinityz.UHC;
  */
 public class WhitelistManager {
     public boolean whitelist_enabled;
-    public List<UUID> whitelist;
+    public NoDuplicatesList<UUID> whitelist;
     public List<WhitelistorPlayer> whitelistorPlayers;
 
     public WhitelistManager(UHC instance) {
-        whitelist = new ArrayList<>();
+        whitelist = new NoDuplicatesList<>();
         whitelist_enabled = true;
         whitelistorPlayers = new ArrayList<>();
-        instance.getCommand("whitelist").setExecutor(new WhitelistCMD(this));
+        instance.getCommand("whitelist").setExecutor(new WhitelistCommand(this));
+        instance.getCommand("whitelist").setTabCompleter(new WhitelistCommand(this));
     }
 
     // Method to get a whitelistor by their UUID. Revise it later, there might be a
