@@ -70,9 +70,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
             if (!senderCanManageWhitelist(sender)) {
                 return true;
             }
-            Bukkit.getOnlinePlayers().forEach(all -> {
-                whitelistManager.whitelist.add(all.getUniqueId());
-            });
+            Bukkit.getOnlinePlayers().forEach(all -> whitelistManager.whitelist.add(all.getUniqueId()));
             sender.sendMessage("All online players have been whitelisted");
             return true;
         }
@@ -108,11 +106,10 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                 } else if (args.length == 2 && args[0].equalsIgnoreCase("clear")) {
                     return Collections.singletonList("kick");
                 }
-            } else {
-                if (args.length == 1) {
-                    return Arrays.asList(new String[] { "add", "remove" });
-                }
+            } else if (args.length == 1) {
+                return Arrays.asList(new String[] { "add", "remove" });
             }
+
         }
         return null;
     }

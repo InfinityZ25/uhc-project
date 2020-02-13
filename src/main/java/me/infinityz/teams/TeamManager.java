@@ -2,27 +2,69 @@ package me.infinityz.teams;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
+
+import me.infinityz.UHC;
+import me.infinityz.whitelist.NoDuplicatesList;
 
 /**
  * TeamManager
  */
 public class TeamManager {
     public LinkedList<Team> teamList;
+    public List<TeamInvite> teamInvites;
     public Map<UUID, Team> map;
+    public int team_size;
+    public boolean team_enabled, team_management;
 
-    public TeamManager() {
+    public TeamManager(UHC instance) {
         teamList = new LinkedList<>();
+        teamInvites = new NoDuplicatesList<>();
         map = new HashMap<>();
+        team_size = 2;
+        team_enabled = false;
+        team_management = false;
+        TeamCommand teamCommand = new TeamCommand(this);
+        instance.getCommand("team").setExecutor(teamCommand);
+        instance.getCommand("team").setTabCompleter(teamCommand);
     }
-    //Use the keyword synchronized to avoid teams being created with the same team number.
-    public synchronized Team createTeam(Player player){
-        Team team = new Team(player.getUniqueId(), "" + teamList.size()+1);
+
+    // Use the keyword synchronized to avoid teams being created with the same team
+    // number.
+    public synchronized Team createTeam(Player player, String team_name) {
+        Team team = new Team(player.getUniqueId(), team_name);
         teamList.add(team);
+        map.put(player.getUniqueId(), team);
         return team;
+    }
+
+    // Use the keyword synchronized to avoid teams being created with the same team
+    // number.
+    public synchronized Team createTeam(Player player) {
+        return createTeam(player, "" + (teamList.size() + 1));
+    }
+
+    public Team findPlayersTeam(UUID player) {
+        return map.get(player);
+    }
+
+    public TeamInvite createInvite(Team team, UUID sender, UUID target) {
+        TeamInvite invite = new TeamInvite(team, sender, target);
+        teamInvites.add(invite);
+        return invite;
+    }
+
+    public TeamInvite getInvite(UUID player, UUID target){
+        for (TeamInvite invite : teamInvites) {
+            if(player == invite.target && target == invite.sender){
+                return invite;
+            }            
+        }
+        return null;
     }
 
 }

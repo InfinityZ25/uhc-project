@@ -5,10 +5,16 @@ import java.util.Collections;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import me.infinityz.UHC;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 /**
  * Team
@@ -56,7 +62,23 @@ public class Team {
         this.team_leader = new_leader;
         return true;
     }
+    //Method to invite a player to become a new member. A lot of things have to be checked before this method can be called
+    public void invitePlayer(Player sender, Player target){
+        UHC.getInstance().teamManager.createInvite(this, sender.getUniqueId(), target.getUniqueId());
+        TextComponent text = new TextComponent(ChatColor.GREEN + sender.getName() + " has invited you to their team. Use /team accept " + sender.getName() + " or click here!");
+        text.setClickEvent(new ClickEvent(Action.RUN_COMMAND, "/team accept " + sender.getName()));
+        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "Click to accept the team invite!").create()));
+        target.sendMessage(text);
+    }
+    //Add a new member to the team.
+    public void addMember(UUID uuid){
+        if(!team_members.contains(uuid)){
+            team_members.add(uuid);
+        }
+    }
 
-    //Make the invite method?
+    public boolean removeMember(UUID uuid){
+       return team_members.remove(uuid);        
+    }
 
 }

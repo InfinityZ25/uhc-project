@@ -1,6 +1,7 @@
 package me.infinityz.whitelist;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +21,9 @@ public class WhitelistManager {
         whitelist = new NoDuplicatesList<>();
         whitelist_enabled = true;
         whitelistorPlayers = new ArrayList<>();
-        instance.getCommand("whitelist").setExecutor(new WhitelistCommand(this));
-        instance.getCommand("whitelist").setTabCompleter(new WhitelistCommand(this));
+        WhitelistCommand whitelistCommand = new WhitelistCommand(this);
+        instance.getCommand("whitelist").setExecutor(whitelistCommand);
+        instance.getCommand("whitelist").setTabCompleter(whitelistCommand);
         Bukkit.getPluginManager().registerEvents(new WhitelistEvents(this), instance);
     }
 
@@ -31,6 +33,18 @@ public class WhitelistManager {
         for (WhitelistorPlayer whitelistor : whitelistorPlayers) {
             if (whitelistor.player_uuid.equals(uuid))
                 return whitelistor;
+        }
+        return null;
+    }
+
+    public WhitelistorPlayer findWhoWhoWhitelisted(UUID uuid) {
+        for (WhitelistorPlayer whitelistor : whitelistorPlayers) {
+            for (UUID all : Arrays.asList(whitelistor.whitelisted_uuids)) {
+                if (all == null)
+                    continue;
+                if (all.equals(uuid))
+                    return whitelistor;
+            }
         }
         return null;
     }

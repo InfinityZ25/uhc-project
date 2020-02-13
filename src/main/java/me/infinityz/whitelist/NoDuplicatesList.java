@@ -6,7 +6,7 @@ import java.util.LinkedList;
 /**
  * NoDuplicatesList
  */
-class NoDuplicatesList<E> extends LinkedList<E> {
+public class NoDuplicatesList<E> extends LinkedList<E> {
     /**
      *
      */

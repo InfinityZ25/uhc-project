@@ -7,3 +7,6 @@ commands:
   whitelist:
     aliases: [wl]
     usage: "\u00A7cCorrect usage: /whitelist <add:remove:clear:all:on:off> [Player]"
+  team:
+    aliases: [teams, squad]
+    usage: "\u00A7cCorrect usage: /team <create:invite:accept:deny:kick:leader:disband:chat> [Player:Message]"
