@@ -52,6 +52,7 @@ public class UHC extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         instance = this;
+        GameStage.stage = GameStage.LOADING;
         this.scoreboardManager = new ScoreboardManager();
         this.whitelistManager = new WhitelistManager(this);
         this.teamManager = new TeamManager(this);
@@ -88,6 +89,11 @@ public class UHC extends JavaPlugin implements Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public enum GameStage{
+        LOADING, PRE_GAME, SCATTERING, IN_GAME, DEATHMATCH, DONE;
+        public static GameStage stage;
     }
     
 }

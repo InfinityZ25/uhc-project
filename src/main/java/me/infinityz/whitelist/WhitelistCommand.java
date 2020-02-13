@@ -114,6 +114,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     boolean handleAddRemove(String[] args, CommandSender sender) {
         // I'm running this tasks async due to #getOfflinePlayer being main thread
         // heavy.

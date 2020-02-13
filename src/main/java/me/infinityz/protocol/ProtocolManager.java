@@ -12,6 +12,8 @@ import me.infinityz.scoreboard.IScoreboardSign;
 /**
  * ProtocolManager
  */
+
+@SuppressWarnings("unused")
 public class ProtocolManager {
     private Class<?> scoreboardClass = Reflection.getClass("{nms}.PacketPlayOutScoreboardObjective");
     private FieldAccessor<String> objectiveName = Reflection.getField(scoreboardClass, String.class, 0);

@@ -11,7 +11,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.TravelAgent;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
@@ -84,7 +83,6 @@ public class GlobalListeners extends SkeletonListener {
         }, 20, 1);
     }
 
-    
     boolean isNearWall(final Player p, final double wall, final double check_distance) {
         final Location loc = p.getLocation();
         // Get the absolute int of player's location and check if it is in proximity to
@@ -95,6 +93,7 @@ public class GlobalListeners extends SkeletonListener {
         return false;
     }
 
+    @SuppressWarnings("all")
     List<Vector> getLocationalVectors(Location loc, int min_height, int max_height, int radius, int wall) {
         List<Vector> vector_list = new ArrayList<>();
         for (int x = loc.getBlockX() - radius; x <= loc.getBlockX() + radius; x++) {
@@ -139,12 +138,12 @@ public class GlobalListeners extends SkeletonListener {
     }
 
     @EventHandler
-    public void scenEnable(ScenarioEnabledEvent e){
+    public void scenEnable(ScenarioEnabledEvent e) {
         Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + "has been enabled");
     }
 
     @EventHandler
-    public void scenDisable(ScenarioDisabledEvent e){
+    public void scenDisable(ScenarioDisabledEvent e) {
         Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + "has been disabled");
     }
 
@@ -170,7 +169,6 @@ public class GlobalListeners extends SkeletonListener {
         }
         if (toWorld.getEnvironment().equals(fromWorld.getEnvironment()))
             useDimension = false;
-        final TravelAgent a = event.getPortalTravelAgent();
 
         Bukkit.broadcastMessage("RUNS>??");
         final double blockRatio = useDimension ? (oldEnvironment == Environment.NETHER ? 8 : 0.125) : 1;

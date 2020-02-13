@@ -33,6 +33,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 "leave", "list", "members" };
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length < 1) {

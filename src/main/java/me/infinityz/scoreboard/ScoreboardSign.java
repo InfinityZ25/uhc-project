@@ -197,8 +197,6 @@ public class ScoreboardSign {
             return;
         if (!created)
             return;
-
-        int score = (15 - line);
         VirtualTeam val = getOrCreateTeam(line);
         val.sendLine().forEach((it)-> getPlayer().sendPacket(it));
         getPlayer().sendPacket(sendScore(val.getCurrentPlayer(), line));
@@ -265,7 +263,7 @@ public class ScoreboardSign {
 
         return packet;
     }
-
+    @SuppressWarnings("unchecked")
     public PacketPlayOutScoreboardTeam add3Remove4(int mode, String playerName, String teamName) {
         PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
         setField(packet, "a", teamName);
@@ -404,6 +402,7 @@ public class ScoreboardSign {
             return addOrRemovePlayer(3, currentPlayer);
         }
 
+        @SuppressWarnings("unchecked")
         public PacketPlayOutScoreboardTeam addOrRemovePlayer(int mode, String playerName) {
             PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam();
             setField(packet, "a", name);
