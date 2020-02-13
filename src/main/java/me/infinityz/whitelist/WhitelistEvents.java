@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 
 import me.infinityz.UHC;
+import me.infinityz.whitelist.objects.WhitelistorPlayer;
 
 /**
  * WhitelistEvents

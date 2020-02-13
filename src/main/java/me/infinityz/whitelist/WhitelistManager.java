@@ -8,6 +8,8 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 
 import me.infinityz.UHC;
+import me.infinityz.whitelist.objects.NoDuplicatesList;
+import me.infinityz.whitelist.objects.WhitelistorPlayer;
 
 /**
  * WhitelistManager

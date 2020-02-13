@@ -14,7 +14,7 @@ public class GameConfigManager {
 
     public GameConfigManager(){
         gameConfig = new GameConfig();
-        gameConfigListener = new GameConfigListener();
+        gameConfigListener = new GameConfigListener(this);
         Bukkit.getPluginManager().registerEvents(gameConfigListener, UHC.getInstance());
     }
 

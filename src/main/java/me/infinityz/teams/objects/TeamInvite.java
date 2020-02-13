@@ -1,4 +1,4 @@
-package me.infinityz.teams;
+package me.infinityz.teams.objects;
 
 import java.util.UUID;
 

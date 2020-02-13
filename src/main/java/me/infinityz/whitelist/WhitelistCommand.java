@@ -15,6 +15,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import me.infinityz.UHC;
+import me.infinityz.whitelist.objects.WhitelistorPlayer;
 
 /**
  * WhitelistCommand

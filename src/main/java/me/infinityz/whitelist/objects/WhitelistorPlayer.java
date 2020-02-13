@@ -1,4 +1,4 @@
-package me.infinityz.whitelist;
+package me.infinityz.whitelist.objects;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package me.infinityz.teams;
+package me.infinityz.teams.objects;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,9 +21,9 @@ import net.md_5.bungee.api.chat.TextComponent;
  * Team
  */
 public class Team {
-    UUID team_leader;
-    ArrayList<UUID> team_members;
-    String team_name;
+    public UUID team_leader;
+    public ArrayList<UUID> team_members;
+    public String team_name;
 
     // Recursive constructor to allow the usage of player instead of uuid
     public Team(Player player, String team_name) {

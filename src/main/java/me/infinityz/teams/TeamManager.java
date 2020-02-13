@@ -9,7 +9,10 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 
 import me.infinityz.UHC;
-import me.infinityz.whitelist.NoDuplicatesList;
+import me.infinityz.teams.commands.TeamCommand;
+import me .infinityz.teams.objects.Team;
+import me .infinityz.teams.objects.TeamInvite;
+import me.infinityz.whitelist.objects.NoDuplicatesList;;
 
 /**
  * TeamManager

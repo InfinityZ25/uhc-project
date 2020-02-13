@@ -3,6 +3,7 @@ package me.infinityz.protocol;
 import java.lang.reflect.Method;
 
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 
 import io.netty.channel.Channel;
 import me.infinityz.UHC;
@@ -27,6 +28,9 @@ public class ProtocolManager {
     private Class<?> enchantClass = Reflection.getClass("{nms}.PacketPlayInEnchantItem");
     private Class<?> experienceClass = Reflection.getClass("{nms}.PacketPlayOutExperience");
 
+    private Class<?> entityEffectClass = Reflection.getClass("{nms}.PacketPlayOutEntityEffect");    
+    private FieldAccessor<Byte> effectId = Reflection.getField(entityEffectClass, byte.class, 0);
+
     public TinyProtocol protocol;
 
     public ProtocolManager(UHC instance) {
@@ -34,8 +38,7 @@ public class ProtocolManager {
         protocol = new TinyProtocol(instance) {
 
             @Override
-            public Object onPacketInAsync(Player sender, Channel channel, Object packet) {
-                
+            public Object onPacketInAsync(Player sender, Channel channel, Object packet) {               
                 return super.onPacketOutAsync(sender, channel, packet);
             }
             
@@ -55,12 +58,13 @@ public class ProtocolManager {
                         }
                     }
 
-                } else if (windowData.isInstance(packet)) {
-                        System.out.println(windowID.get(packet));
-                        System.out.println(value.get(packet));
-                        System.out.println(othervalue.get(packet));                        
-                    
-                }         
+                }else if (entityEffectClass.isInstance(packet) && !UHC.getInstance().gameConfigManager.gameConfig.absorption){//Absorptionless on a packet level
+                    byte id = effectId.get(packet);
+                    if(id == (byte)22){
+                        reciever.removePotionEffect(PotionEffectType.ABSORPTION);
+                        return null;
+                    }
+                }
 
                 return super.onPacketOutAsync(reciever, channel, packet);
             }

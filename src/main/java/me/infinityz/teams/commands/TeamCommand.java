@@ -1,4 +1,4 @@
-package me.infinityz.teams;
+package me.infinityz.teams.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +16,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import me.infinityz.teams.TeamManager;
+import me.infinityz.teams.events.TeamCreatedEvent;
+import me.infinityz.teams.events.TeamDisbandedEvent;
+import me.infinityz.teams.events.TeamJoinedEvent;
+import me.infinityz.teams.events.TeamKickedEvent;
+import me.infinityz.teams.events.TeamLeftEvent;
+import me.infinityz.teams.events.TeamRemovedEvent;
+import me.infinityz.teams.objects.Team;
+import me.infinityz.teams.objects.TeamInvite;
+
 /**
  * TeamCommand
  */
@@ -28,7 +38,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
     public TeamCommand(TeamManager teamManager) {
         this.teamManager = teamManager;
         this.argumentHelp = new String[] { "create", "invite", "accept", "enable", "disable", "size", "reset", "kick",
-                "disband", "management", "chat", "leader", "leave", "list", "members"};
+                "disband", "management", "chat", "leader", "leave", "list", "members" };
         this.userArgumentHelp = new String[] { "create", "invite", "accept", "kick", "disband", "chat", "leader",
                 "leave", "list", "members" };
     }
@@ -63,6 +73,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 team = teamManager.createTeam(player);
             }
             sender.sendMessage("You've created Team " + team.team_name + "!");
+            Bukkit.getPluginManager().callEvent(new TeamCreatedEvent(team, player));
             // Maybe call a TeamCreatedEvent?
             break;
         }
@@ -78,6 +89,8 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 team = teamManager.createTeam(player);
                 sender.sendMessage("Creating a team for you...");
                 sender.sendMessage("You've created Team " + team.team_name + "!");
+
+                Bukkit.getPluginManager().callEvent(new TeamCreatedEvent(team, player));
             }
             if (team.team_leader != player.getUniqueId()) {
                 sender.sendMessage("You're not the team leader");
@@ -89,7 +102,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             }
             if (args.length > 1) {
                 Player target = Bukkit.getPlayer(args[1]);
-                if(target.getUniqueId() == player.getUniqueId()){
+                if (target.getUniqueId() == player.getUniqueId()) {
                     sender.sendMessage("You can't invite yourself to the team!");
                     return true;
                 }
@@ -139,6 +152,8 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                         return true;
                     }
                     invite.teamToJoin.addMember(player.getUniqueId());
+
+                    Bukkit.getPluginManager().callEvent(new TeamJoinedEvent(team, player));
                     invite.teamToJoin.sendTeamMessage(ChatColor.GREEN + player.getName() + " has joined the team!");
 
                     teamManager.map.put(player.getUniqueId(), team);
@@ -198,7 +213,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             }
             if (args.length > 1) {
                 Player target = Bukkit.getPlayer(args[1]);
-                if(target.getUniqueId() == player.getUniqueId()){
+                if (target.getUniqueId() == player.getUniqueId()) {
                     sender.sendMessage("You can't kick yourself from the team!");
                     return true;
                 }
@@ -207,6 +222,8 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                         target.sendMessage(
                                 "You've been kicked from Team " + team.team_name + " by " + sender.getName());
                         team.sendTeamMessage(target.getName() + " has been kicked from the team!");
+
+                        Bukkit.getPluginManager().callEvent(new TeamKickedEvent(team, target, player));
                         return true;
                     }
                     return true;
@@ -214,6 +231,8 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(args[1]);
                 if (team.removeMember(offlineTarget.getUniqueId())) {
                     team.sendTeamMessage(offlineTarget.getName() + " has been kicked from the team!");
+
+                    Bukkit.getPluginManager().callEvent(new TeamKickedEvent(team, offlineTarget, player));
                     return true;
                 }
                 sender.sendMessage(args[1] + " is not a member of your team!");
@@ -241,7 +260,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             }
             if (args.length > 1) {
                 Player target = Bukkit.getPlayer(args[1]);
-                if(target.getUniqueId() == player.getUniqueId()){
+                if (target.getUniqueId() == player.getUniqueId()) {
                     sender.sendMessage("You can't give yourself the leadership!");
                     return true;
                 }
@@ -278,8 +297,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 team.removeMember(player.getUniqueId());
                 teamManager.map.remove(player.getUniqueId());
                 team.sendTeamMessage(sender.getName() + " has abandoned the team!");
-                if(team.team_members.size() < 1){
-                    //Team disband
+
+                Bukkit.getPluginManager().callEvent(new TeamLeftEvent(team, player));
+                if (team.team_members.size() < 1) {
+                    // Team disband
                     teamManager.teamList.remove(team);
                     team = null;
                     return true;
@@ -297,9 +318,9 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             }
             team.removeMember(player.getUniqueId());
             team.sendTeamMessage(player.getName() + " has left the team!");
-            sender.sendMessage("You've left Team " + team.team_name + "!");            
+            sender.sendMessage("You've left Team " + team.team_name + "!");
             teamManager.map.remove(player.getUniqueId());
-            // PlayerLeftTeamEvent maybe?
+            Bukkit.getPluginManager().callEvent(new TeamLeftEvent(team, player));
             break;
         }
         case "disband": {
@@ -318,8 +339,9 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
             sender.sendMessage("You've disbanded your team!");
+            Bukkit.getPluginManager().callEvent(new TeamDisbandedEvent(team, player));
             team.team_leader = null;
-            team.team_members.remove(player.getUniqueId());            
+            team.team_members.remove(player.getUniqueId());
             teamManager.map.remove(player.getUniqueId());
             team.sendTeamMessage("Your team has been disbanded by " + sender.getName());
             team.team_members.forEach(uuid -> teamManager.map.remove(uuid));
@@ -357,9 +379,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             teamManager.team_size = 1;
             sender.sendMessage("You've disabled teams!");
             // Teams disabled, make a call
-            teamManager.teamList.forEach(team -> {
-                team.sendTeamMessage("Your team was disbanded since teams have been disabled!");
-            });
+            teamManager.teamList.forEach(team -> Bukkit.getPluginManager().callEvent(new TeamRemovedEvent(team)));
             teamManager.teamList.clear();
             teamManager.teamInvites.clear();
             teamManager.map.clear();
@@ -422,9 +442,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage("No permissions!");
                 return true;
             }
-            teamManager.teamList.forEach(team -> {
-                team.sendTeamMessage("Your team was disbanded due to teams being reset!");
-            });
+            teamManager.teamList.forEach(team -> Bukkit.getPluginManager().callEvent(new TeamRemovedEvent(team)));
             teamManager.teamList.clear();
             teamManager.teamInvites.clear();
             teamManager.map.clear();
@@ -433,7 +451,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
         case "chat": {
             break;
         }
-        case "members":{
+        case "members": {
             final Player player = (Player) sender;
             Team team = teamManager.findPlayersTeam(player.getUniqueId());
             if (team == null) {
@@ -445,36 +463,35 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
 
             break;
         }
-        case "list":{
-            if(args.length > 1){
-                //Change this to display weather players are offline/online/death/alive/
+        case "list": {
+            if (args.length > 1) {
+                // Change this to display weather players are offline/online/death/alive/
                 final Player player = Bukkit.getPlayer(args[1]);
-                if(player != null && player.isOnline()){
+                if (player != null && player.isOnline()) {
                     Team team = teamManager.findPlayersTeam(player.getUniqueId());
-                    if(team == null){
+                    if (team == null) {
                         sender.sendMessage(args[1] + " doesn't have a team!");
                         return true;
                     }
                     sender.sendMessage(args[1] + "'s Team members:");
-                    team.getMembersName().forEach(it ->{
+                    team.getMembersName().forEach(it -> {
                         sender.sendMessage(" - " + it);
                     });
                     return true;
                 }
                 final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
                 Team team = teamManager.findPlayersTeam(offlinePlayer.getUniqueId());
-                if(team == null){
+                if (team == null) {
                     sender.sendMessage(args[1] + " doesn't have a team!");
                     return true;
                 }
                 sender.sendMessage(args[1] + "'s Team members:");
-                team.getMembersName().forEach(it ->{
+                team.getMembersName().forEach(it -> {
                     sender.sendMessage(" - " + it);
                 });
                 return true;
             }
-            //List all teams
-
+            // List all teams
 
             break;
         }
