@@ -88,6 +88,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             }
             if (args.length > 1) {
                 Player target = Bukkit.getPlayer(args[1]);
+                if(target.getUniqueId() == player.getUniqueId()){
+                    sender.sendMessage("You can't invite yourself to the team!");
+                    return true;
+                }
                 if (target != null && target.isOnline()) {
                     Team targetsTeam = teamManager.findPlayersTeam(target.getUniqueId());
                     if (targetsTeam != null) {
@@ -193,6 +197,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             }
             if (args.length > 1) {
                 Player target = Bukkit.getPlayer(args[1]);
+                if(target.getUniqueId() == player.getUniqueId()){
+                    sender.sendMessage("You can't kick yourself from the team!");
+                    return true;
+                }
                 if (target != null && target.isOnline()) {
                     if (team.removeMember(target.getUniqueId())) {
                         target.sendMessage(
@@ -232,6 +240,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             }
             if (args.length > 1) {
                 Player target = Bukkit.getPlayer(args[1]);
+                if(target.getUniqueId() == player.getUniqueId()){
+                    sender.sendMessage("You can't give yourself the leadership!");
+                    return true;
+                }
                 if (target != null && target.isOnline()) {
                     if (team.getMember(target.getUniqueId()) != null) {
                         team.sendTeamMessage(sender.getName() + " has given the team to " + target.getName() + "!");
