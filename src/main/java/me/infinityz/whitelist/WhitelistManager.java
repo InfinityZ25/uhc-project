@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
+
 import me.infinityz.UHC;
 
 /**
@@ -20,6 +22,7 @@ public class WhitelistManager {
         whitelistorPlayers = new ArrayList<>();
         instance.getCommand("whitelist").setExecutor(new WhitelistCommand(this));
         instance.getCommand("whitelist").setTabCompleter(new WhitelistCommand(this));
+        Bukkit.getPluginManager().registerEvents(new WhitelistEvents(this), instance);
     }
 
     // Method to get a whitelistor by their UUID. Revise it later, there might be a

@@ -20,8 +20,10 @@ public class WhitelistEvents  implements Listener{
     public void onLogin(PlayerLoginEvent event) {
         if(!whitelistManager.whitelist_enabled)return;
         final Player player = event.getPlayer();
-        if (whitelistManager.whitelist.contains(player.getUniqueId()) || player.hasPermission("uhc.whitelist.bypass"))
+        if (whitelistManager.whitelist.contains(player.getUniqueId()) || player.hasPermission("uhc.whitelist.bypass")){
             event.allow();
+            return;
+        }
         event.disallow(Result.KICK_WHITELIST, "You're not in the whitelist! Buy a rank bud!");
 
     }
