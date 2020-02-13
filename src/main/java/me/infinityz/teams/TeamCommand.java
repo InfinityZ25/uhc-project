@@ -28,9 +28,9 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
     public TeamCommand(TeamManager teamManager) {
         this.teamManager = teamManager;
         this.argumentHelp = new String[] { "create", "invite", "accept", "enable", "disable", "size", "reset", "kick",
-                "disband", "management", "chat", "leader", "leave" };
+                "disband", "management", "chat", "leader", "leave", "list", "members"};
         this.userArgumentHelp = new String[] { "create", "invite", "accept", "kick", "disband", "chat", "leader",
-                "leave" };
+                "leave", "list", "members" };
     }
 
     @Override
@@ -277,6 +277,12 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                 team.removeMember(player.getUniqueId());
                 teamManager.map.remove(player.getUniqueId());
                 team.sendTeamMessage(sender.getName() + " has abandoned the team!");
+                if(team.team_members.size() < 1){
+                    //Team disband
+                    teamManager.teamList.remove(team);
+                    team = null;
+                    return true;
+                }
                 UUID uuid = team.team_members.get(new Random().nextInt(team.team_members.size()));
                 team.team_leader = uuid;
                 Player newLeader = Bukkit.getPlayer(uuid);
@@ -425,7 +431,51 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
         }
         case "chat": {
             break;
+        }
+        case "members":{
+            final Player player = (Player) sender;
+            Team team = teamManager.findPlayersTeam(player.getUniqueId());
+            if (team == null) {
+                sender.sendMessage("You're not in a team");
+                return true;
+            }
+            sender.sendMessage("Your teams members are: ");
+            team.getMembersName().parallelStream().forEach(str -> sender.sendMessage(" - " + str));
 
+            break;
+        }
+        case "list":{
+            if(args.length > 1){
+                //Change this to display weather players are offline/online/death/alive/
+                final Player player = Bukkit.getPlayer(args[1]);
+                if(player != null && player.isOnline()){
+                    Team team = teamManager.findPlayersTeam(player.getUniqueId());
+                    if(team == null){
+                        sender.sendMessage(args[1] + " doesn't have a team!");
+                        return true;
+                    }
+                    sender.sendMessage(args[1] + "'s Team members:");
+                    team.getMembersName().forEach(it ->{
+                        sender.sendMessage(" - " + it);
+                    });
+                    return true;
+                }
+                final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+                Team team = teamManager.findPlayersTeam(offlinePlayer.getUniqueId());
+                if(team == null){
+                    sender.sendMessage(args[1] + " doesn't have a team!");
+                    return true;
+                }
+                sender.sendMessage(args[1] + "'s Team members:");
+                team.getMembersName().forEach(it ->{
+                    sender.sendMessage(" - " + it);
+                });
+                return true;
+            }
+            //List all teams
+
+
+            break;
         }
         default: {
             return false;
