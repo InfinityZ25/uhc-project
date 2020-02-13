@@ -50,8 +50,8 @@ public class GlobalListeners extends SkeletonListener {
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(instance, () -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
-                if (isNearWall(player, 50, 7)) {
-                    List<Vector> collection = getLocationalVectors(player.getLocation(), 2, 3, 7, 50);
+                if (isNearWall(player, instance.gameConfigManager.gameConfig.map_size - 3, 7)) {
+                    List<Vector> collection = getLocationalVectors(player.getLocation(), 2, 3, 7, instance.gameConfigManager.gameConfig.map_size);
 
                     if (map.containsKey(player.getUniqueId())) {
                         List<Vector> vList = new ArrayList<>(map.get(player.getUniqueId()));

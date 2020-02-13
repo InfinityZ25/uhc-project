@@ -12,10 +12,14 @@ public class GameConfigManager {
     public GameConfig gameConfig;
     public GameConfigListener gameConfigListener;
 
-    public GameConfigManager(){
+    public GameConfigManager(UHC instance){
         gameConfig = new GameConfig();
         gameConfigListener = new GameConfigListener(this);
         Bukkit.getPluginManager().registerEvents(gameConfigListener, UHC.getInstance());
+        GameConfigCMD configCMD = new GameConfigCMD(this);
+        instance.getCommand("config").setExecutor(configCMD);
+        instance.getCommand("config").setTabCompleter(configCMD);
+        
     }
 
 }

@@ -64,7 +64,7 @@ public class UHC extends JavaPlugin implements Listener {
         this.scatter = new Scatter(this);
         this.protocolManager = new ProtocolManager(this);
         this.scenariosManager = new ScenariosManager();
-        this.gameConfigManager = new GameConfigManager();
+        this.gameConfigManager = new GameConfigManager(this);
     }
 
     @Override

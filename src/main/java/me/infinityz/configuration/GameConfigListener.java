@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,9 +14,15 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -91,15 +98,48 @@ public class GameConfigListener implements Listener {
     // Horses
     @EventHandler
     public void onEntityMountEvent(EntityMountEvent e) {
-        if (e.getEntity().getType() == EntityType.HORSE && !gameConfigManager.gameConfig.horses)
-            e.setCancelled(true);
+        if (e.getMount().getType() == EntityType.HORSE) {
+            if (!gameConfigManager.gameConfig.horses) {
+                e.getEntity().sendMessage("Horses are disabled!");
+                e.setCancelled(true);
+            }
+            if(!gameConfigManager.gameConfig.horsearmor){
+                Horse horse = (Horse)e.getMount();
+                horse.getInventory().setArmor(null);
+            }
+
+        }
+    }
+    @EventHandler
+    public void onHorse(InventoryOpenEvent e){
+        if(!gameConfigManager.gameConfig.horsearmor){
+            if(e.getInventory() instanceof HorseInventory){
+                HorseInventory horse = (HorseInventory) e.getInventory();
+                horse.setArmor(null);
+            }
+        }
+
+    }
+    @EventHandler
+    public void onHorse(InventoryCloseEvent e){
+        if(!gameConfigManager.gameConfig.horsearmor){
+            if(e.getInventory() instanceof HorseInventory){
+                HorseInventory horse = (HorseInventory) e.getInventory();
+                horse.setArmor(null);
+            }
+        }
+
     }
 
     // HorseHealing and NaturalRegeneration
     @EventHandler
     public void onEntityRegainHealth(EntityRegainHealthEvent e) {
-        if (!gameConfigManager.gameConfig.horsehealing && e.getEntityType() == EntityType.HORSE) {
+        if (!gameConfigManager.gameConfig.horsehealing && e.getEntityType() == EntityType.HORSE
+                && e.getRegainReason() == RegainReason.EATING) {
             e.setCancelled(true);
+            e.getEntity().getNearbyEntities(2.0, 2.0, 2.0).stream()
+                    .filter(entity -> entity.getType() == EntityType.PLAYER)
+                    .forEach(entity -> entity.sendMessage("Horse Healing is disabled!"));
             return;
         } else if (!gameConfigManager.gameConfig.natural_regeneration && e.getEntityType() == EntityType.PLAYER) {
             e.setCancelled(true);
@@ -144,94 +184,167 @@ public class GameConfigListener implements Listener {
             return;
         }
     }
-    //Potions
+
+    // God apples and Golden Heads
     @EventHandler
-    public void brewEvent(BrewEvent e){
-        if(!gameConfigManager.gameConfig.invisibility_potion || !gameConfigManager.gameConfig.regeneration_potion || !gameConfigManager.gameConfig.strength_1 ||!gameConfigManager.gameConfig.strength_2 ||!gameConfigManager.gameConfig.speed_1 ||!gameConfigManager.gameConfig.speed_2){
-            for (ItemStack stack : e.getContents().getContents().clone()) {
-                if(!gameConfigManager.gameConfig.invisibility_potion){
-                    switch(stack.getDurability()){                        
-                        case 8238:
-                        case 8270:
-                        case 16430:
-                        case 16462:{
-                            e.getContents().getViewers().forEach(it -> it.sendMessage("Regeneration potions are disabled!"));
-                            e.getContents().remove(stack);
-                            e.setCancelled(true);
-                            return;
-                        }
-                    }
-                }
-                if(!gameConfigManager.gameConfig.regeneration_potion){
-                    switch(stack.getDurability()){                        
-                        case 8193:
-                        case 8225:
-                        case 8257:
-                        case 16417:
-                        case 16449:
-                        case 16385:{
-                            e.getContents().getViewers().forEach(it -> it.sendMessage("Regeneration potions are disabled!"));
-                            e.getContents().remove(stack);
-                            e.setCancelled(true);
-                            return;
-                        }
-                    }
-                }
-                if(!gameConfigManager.gameConfig.speed_1){
-                    switch(stack.getDurability()){                        
-                        case 8194:
-                        case 8226:
-                        case 8258:
-                        case 16386:
-                        case 16418:
-                        case 16450:{
-                            e.getContents().getViewers().forEach(it -> it.sendMessage("Speed potions are disabled!"));
-                            e.getContents().remove(stack);
-                            e.setCancelled(true);
-                            return;
-                        }
-                    }
-                }
-                else if(!gameConfigManager.gameConfig.speed_2){
-                    switch(stack.getDurability()){                        
-                        case 8226:
-                        case 16418:{
-                            e.getContents().getViewers().forEach(it -> it.sendMessage("Speed II potions are disabled!"));
-                            e.getContents().remove(stack);
-                            e.setCancelled(true);
-                            return;
-                        }
-                    }
-                }
-                if(!gameConfigManager.gameConfig.strength_1){
-                    switch(stack.getDurability()){                        
-                        case 8201:
-                        case 8233:
-                        case 8265:
-                        case 16393:
-                        case 16425:
-                        case 16457:{
-                            e.getContents().getViewers().forEach(it -> it.sendMessage("Strength potions are disabled!"));
-                            e.getContents().remove(stack);
-                            e.setCancelled(true);
-                            return;
-                        }
-                    }
-                }
-                else if(!gameConfigManager.gameConfig.strength_2){
-                    switch(stack.getDurability()){                        
-                        case 8233:
-                        case 16425:{
-                            e.getContents().getViewers().forEach(it -> it.sendMessage("Strength II potions are disabled!"));
-                            e.getContents().remove(stack);
-                            e.setCancelled(true);
-                            return;
-                        }
-                    }
-                }
-                
-            }
+    public void prepareCraftItem(PrepareItemCraftEvent e) {
+        if (!gameConfigManager.gameConfig.godapples && e.getInventory().getResult().getType() == Material.GOLDEN_APPLE
+                && e.getInventory().getResult().getDurability() == 1) {
+            e.getInventory().setResult(null);
+            e.getViewers().get(0).sendMessage("God apples are disabled!");
+            return;
         }
+        if (!gameConfigManager.gameConfig.goldenheads && e.getInventory().getResult().getType() == Material.GOLDEN_APPLE
+                && e.getInventory().getResult().getItemMeta() != null
+                && e.getInventory().getResult().getItemMeta().hasDisplayName()
+                && e.getInventory().getResult().getItemMeta().getDisplayName()
+                        .equalsIgnoreCase(ChatColor.translateAlternateColorCodes('&', "&6golden head"))) {
+            e.getInventory().setResult(null);
+            e.getViewers().get(0).sendMessage("Golden heads are disabled!");
+            return;
+        }
+    }
+
+    // Potions
+    @EventHandler
+    public void brewEvent(BrewEvent e) {
+        if (!gameConfigManager.gameConfig.regeneration_potion
+                && e.getContents().getIngredient().getType() == Material.GHAST_TEAR) {
+            e.getContents().getViewers().forEach(it -> it.sendMessage("Regen potions are disabled!"));
+            e.setCancelled(true);
+            dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+            e.getContents().setIngredient(null);
+            return;
+        }
+        if (!gameConfigManager.gameConfig.invisibility_potion
+                && e.getContents().getIngredient().getType() == Material.FERMENTED_SPIDER_EYE) {
+            boolean found = false;
+            for (ItemStack stack : e.getContents().getContents()) {
+                if (stack == null || stack.getType() == Material.AIR)
+                    continue;
+                switch (stack.getDurability()) {
+                case 8230:
+                case 8262:
+                case 16422:
+                case 16454:
+                case 8238:
+                case 8270:
+                case 16430:
+                case 16462: {
+                    e.getContents().getViewers().forEach(it -> it.sendMessage("Invisibility potions are disabled!"));
+                    e.setCancelled(true);
+                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                    e.getContents().setIngredient(null);
+                    found = true;
+                    return;
+                }
+                }
+            }
+            if (found)
+                return;
+        }
+        if (!gameConfigManager.gameConfig.speed_1 && e.getContents().getIngredient().getType() == Material.SUGAR) {
+            e.getContents().getViewers().forEach(it -> it.sendMessage("Speed potions are disabled!"));
+            e.setCancelled(true);
+            dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+            e.getContents().setIngredient(null);
+            return;
+        }
+        if (!gameConfigManager.gameConfig.speed_2
+                && e.getContents().getIngredient().getType() == Material.GLOWSTONE_DUST) {
+            boolean found = false;
+            for (ItemStack stack : e.getContents().getContents()) {
+                if (stack == null || stack.getType() == Material.AIR)
+                    continue;
+                switch (stack.getDurability()) {
+                case 8194:
+                case 8226:
+                case 8258:
+                case 16386:
+                case 16418:
+                case 16450: {
+                    e.getContents().getViewers().forEach(it -> it.sendMessage("Speed II potions are disabled!"));
+                    e.setCancelled(true);
+                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                    e.getContents().setIngredient(null);
+                    found = true;
+                    return;
+                }
+                }
+            }
+            if (found)
+                return;
+        }
+        if (!gameConfigManager.gameConfig.strength_1
+                && e.getContents().getIngredient().getType() == Material.BLAZE_POWDER) {
+            e.getContents().getViewers().forEach(it -> it.sendMessage("Strength potions are disabled!"));
+            e.setCancelled(true);
+            dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+            e.getContents().setIngredient(null);
+            return;
+        }
+        if (!gameConfigManager.gameConfig.strength_2
+                && e.getContents().getIngredient().getType() == Material.GLOWSTONE_DUST) {
+            boolean found = false;
+            for (ItemStack stack : e.getContents().getContents()) {
+                if (stack == null || stack.getType() == Material.AIR)
+                    continue;
+                switch (stack.getDurability()) {
+                case 8201:
+                case 8233:
+                case 8265:
+                case 16393:
+                case 16425:
+                case 16457: {
+                    e.getContents().getViewers().forEach(it -> it.sendMessage("Strength II potions are disabled!"));
+                    e.setCancelled(true);
+                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                    e.getContents().setIngredient(null);
+                    found = true;
+                    return;
+                }
+                }
+            }
+            if (found)
+                return;
+        }
+        if (!gameConfigManager.gameConfig.poison_1
+                && e.getContents().getIngredient().getType() == Material.SPIDER_EYE) {
+            e.getContents().getViewers().forEach(it -> it.sendMessage("Poison potions are disabled!"));
+            e.setCancelled(true);
+            dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+            e.getContents().setIngredient(null);
+            return;
+        }
+        if (!gameConfigManager.gameConfig.poison_2
+                && e.getContents().getIngredient().getType() == Material.GLOWSTONE_DUST) {
+            boolean found = false;
+            for (ItemStack stack : e.getContents().getContents()) {
+                if (stack == null || stack.getType() == Material.AIR)
+                    continue;
+                switch (stack.getDurability()) {
+                case 8196:
+                case 8260:
+                case 16388:
+                case 16452: {
+                    e.getContents().getViewers().forEach(it -> it.sendMessage("Poison II potions are disabled!"));
+                    e.setCancelled(true);
+                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                    e.getContents().setIngredient(null);
+                    found = true;
+                    return;
+                }
+                }
+            }
+            if (found)
+                return;
+        }
+    }
+    // Horse Armour
+
+    boolean isHorseAmour(ItemStack item) {
+        return item.getType() == Material.DIAMOND_BARDING || item.getType() == Material.GOLD_BARDING
+                || item.getType() == Material.IRON_BARDING;
     }
 
     // Method that ensures ores don't fly like in many other servers

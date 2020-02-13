@@ -10,3 +10,6 @@ commands:
   team:
     aliases: [teams, squad]
     usage: "\u00A7cCorrect usage: /team <create:invite:accept:deny:kick:leader:disband:chat> [Player:Message]"
+  config:
+    aliases: [cfg, uhc]
+    usage: "\u00A7cCorrect usage: /config <value> <data>"
