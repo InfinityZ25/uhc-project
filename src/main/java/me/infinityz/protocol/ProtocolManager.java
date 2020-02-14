@@ -31,6 +31,9 @@ public class ProtocolManager {
     private Class<?> entityEffectClass = Reflection.getClass("{nms}.PacketPlayOutEntityEffect");
     private FieldAccessor<Byte> effectId = Reflection.getField(entityEffectClass, byte.class, 0);
 
+    private Class<?> soundClass = Reflection.getClass("{nms}.PacketPlayOutNamedSoundEffect");
+    private FieldAccessor<String> soundName = Reflection.getField(soundClass, String.class, 0);
+
     public TinyProtocol protocol;
 
     public ProtocolManager(UHC instance) {
@@ -63,6 +66,10 @@ public class ProtocolManager {
                     byte id = effectId.get(packet);
                     if (id == (byte) 22) {
                         reciever.removePotionEffect(PotionEffectType.ABSORPTION);
+                        return null;
+                    }
+                } else if (soundClass.isInstance(packet)) {
+                    if (soundName.get(packet).equalsIgnoreCase("dig.glass")) {
                         return null;
                     }
                 }

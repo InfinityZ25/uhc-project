@@ -10,9 +10,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
+import org.bukkit.event.HandlerList;
 import org.bukkit.util.Vector;
 
 import me.infinityz.UHC;
+import me.infinityz.UHC.GameStage;
 import me.infinityz.border.BedrockBorderTask;
 import me.infinityz.protocol.Reflection;
 import me.infinityz.scatter.ScatterTask;
@@ -105,6 +107,32 @@ public class GlobalCommands implements CommandExecutor {
                 break;
             }
             case "start": {
+                if (GameStage.stage != GameStage.LOBBY) {
+                    sender.sendMessage("You can't start the game when gamestage is " + GameStage.stage.toString());
+                    return true;
+                }
+                if (instance.practiceManager.enabled) {
+                    // Disable an unload practice
+                    UHC.getInstance().practiceManager.enabled = false;
+                    UHC.getInstance().practiceManager.practiceHashSet.forEach(it -> {
+                        Player pl = Bukkit.getPlayer(it);
+                        if (pl != null && pl.isOnline()) {
+                            UHC.getInstance().practiceManager.leavePractice(pl);
+                        }
+                    });
+                    UHC.getInstance().practiceManager.practiceHashSet.clear();
+                    HandlerList.unregisterAll(UHC.getInstance().practiceManager.practiceListener);
+                }
+                // Whitelist everyone and clear the whitelistors
+                instance.whitelistManager.whitelist_enabled = true;
+                Bukkit.getOnlinePlayers().stream().forEach(all -> {
+                    instance.whitelistManager.whitelist.add(all.getUniqueId());
+                });
+                instance.whitelistManager.whitelistorPlayers.clear();
+                // Let the server know that the game is starting
+                // Maybe call an event??
+                GameStage.stage = GameStage.PRE_GAME;
+                // Take it to the scatter task from now on!
 
                 break;
             }

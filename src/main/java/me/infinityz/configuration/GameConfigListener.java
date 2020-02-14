@@ -1,5 +1,6 @@
 package me.infinityz.configuration;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,6 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
@@ -40,6 +42,10 @@ public class GameConfigListener implements Listener {
 
     public GameConfigListener(GameConfigManager gameConfigManager) {
         this.gameConfigManager = gameConfigManager;
+        Bukkit.getWorlds().forEach(world -> {
+            world.setGameRuleValue("naturalRegeneration",
+                    (gameConfigManager.gameConfig.natural_regeneration + "").toLowerCase());
+        });
     }
 
     // Apple and Flint rate
@@ -132,7 +138,7 @@ public class GameConfigListener implements Listener {
 
     }
 
-    // HorseHealing and NaturalRegeneration
+    // HorseHealing
     @EventHandler
     public void onEntityRegainHealth(EntityRegainHealthEvent e) {
         if (!gameConfigManager.gameConfig.horsehealing && e.getEntityType() == EntityType.HORSE
@@ -142,9 +148,17 @@ public class GameConfigListener implements Listener {
                     .filter(entity -> entity.getType() == EntityType.PLAYER)
                     .forEach(entity -> entity.sendMessage("Horse Healing is disabled!"));
             return;
-        } else if (!gameConfigManager.gameConfig.natural_regeneration && e.getEntityType() == EntityType.PLAYER) {
-            e.setCancelled(true);
         }
+    }
+
+    // Saturation fix
+    @EventHandler
+    public void on(FoodLevelChangeEvent e) {
+        if (!(e.getEntity() instanceof Player))
+            return;
+        Player player = (Player) e.getEntity();
+        player.setSaturation(player.getSaturation() * 10.0F);
+
     }
 
     // Enderpearl damage

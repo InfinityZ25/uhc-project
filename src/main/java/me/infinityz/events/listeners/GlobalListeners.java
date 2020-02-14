@@ -2,11 +2,7 @@ package me.infinityz.events.listeners;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -33,6 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import me.infinityz.UHC;
+import me.infinityz.border.BedrockGlassBorder;
 import me.infinityz.protocol.Reflection;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
@@ -42,11 +39,9 @@ import me.infinityz.scenarios.events.ScenarioEnabledEvent;
  */
 public class GlobalListeners extends SkeletonListener {
 
-    // Border maybe
-    Map<UUID, Collection<Vector>> map = new HashMap<>();
-
     public GlobalListeners(final UHC instance) {
         super(instance);
+        new BedrockGlassBorder(instance).runTaskTimerAsynchronously(instance, 0, 5);
     }
 
     @EventHandler
@@ -75,12 +70,12 @@ public class GlobalListeners extends SkeletonListener {
 
     @EventHandler
     public void scenEnable(ScenarioEnabledEvent e) {
-        Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + "has been enabled");
+        Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + " has been enabled");
     }
 
     @EventHandler
     public void scenDisable(ScenarioDisabledEvent e) {
-        Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + "has been disabled");
+        Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + " has been disabled");
     }
 
     private void processNetherPortalEvent(final PlayerPortalEvent event) {

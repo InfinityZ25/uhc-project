@@ -44,7 +44,7 @@ public class LobbyBoard extends ScoreboardSign {
         // Adding the capability to use the string <spacer> as a line separator.
         // Use a integer to keep track of the amount of spacer
         int spacer = 0;
-        int added_lines = UHC.getInstance().scoreboardManager.scenariosSet.size();
+        int added_lines = UHC.getInstance().scenariosManager.getActiveScenarios().size();
         int line_id = lineStrings.length + (added_lines > 0 ? added_lines - 1 : added_lines);
         for (String line : lineStrings) {
             if (line.equalsIgnoreCase("<spacer>")) {
