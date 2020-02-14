@@ -13,3 +13,6 @@ commands:
   config:
     aliases: [cfg, uhc]
     usage: "\u00A7cCorrect usage: /config <value> <data>"
+  practice:
+    aliases: [arena, a, p]
+    usage: "\u00A7cCorrect usage: /practice <value> <data>"

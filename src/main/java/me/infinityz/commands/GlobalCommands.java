@@ -104,6 +104,10 @@ public class GlobalCommands implements CommandExecutor {
                 instance.scoreboardManager.scenariosSet.remove(args[1]);
                 break;
             }
+            case "start": {
+
+                break;
+            }
 
             case "show_enchants": {
 

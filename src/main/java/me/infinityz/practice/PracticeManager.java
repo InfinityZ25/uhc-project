@@ -14,12 +14,7 @@ import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -34,13 +29,14 @@ import net.minecraft.server.v1_8_R3.WorldServer;
 /**
  * PracticeManager
  */
-public class PracticeManager implements Listener {
+public class PracticeManager {
 
     private UHC instance;
     public World practice_world;
     public boolean enabled;
     public int teleport_radius;
     public HashSet<UUID> practiceHashSet;
+    public PracticeListener practiceListener;
 
     // Extend as a Listener for events, make sure to give the right priority to
     // avoid other events interception.
@@ -55,59 +51,8 @@ public class PracticeManager implements Listener {
         this.practice_world.setGameRuleValue("naturalRegeneration", "false");
         this.teleport_radius = 100;
         this.practiceHashSet = new HashSet<>();
-
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent e) {
-        final Player player = e.getPlayer();
-        e.setQuitMessage("");
-        // Check if the player is in the arena
-        if (practiceHashSet.contains(player.getUniqueId())) {
-            // Kill the player and remove from arena list.
-            player.damage(player.getHealth());
-            player.spigot().respawn();
-            practiceHashSet.remove(player.getUniqueId());
-        }
-    }
-
-    @EventHandler
-    public void onDeath(PlayerDeathEvent e) {
-        // Set the death message to empty so all players won't see it.
-        e.setDeathMessage("");
-        // Make sure player that died is in practice
-        if (!isInPractice(e.getEntity().getUniqueId()))
-            return;
-        final Player player = e.getEntity();
-        // Call the method that takes care of the death of the player
-        handleDeath(e);
-        // Ensure the killer is a player and not anyother kindof entity
-        if (player.getKiller() == null || !(player.getKiller() instanceof Player))
-            return;
-        final Player killer = player.getKiller();
-        // Now that we know who the killer is, reward them.
-        if (isInPractice(killer.getUniqueId())) {
-            // MAKE THE REWARD SYSTEM, GIVE SOMETHING TO KILLER
-            killer.sendMessage("You've killed " + player.getDisplayName() + "!");
-            return;
-        }
-        killer.sendMessage(
-                "A player that you damaged has died and you technically did kill him. Congratulations I guess.");
-
-    }
-
-    @EventHandler
-    public void onBucketEvent(PlayerBucketEmptyEvent e) {
-        Bukkit.getScheduler().runTaskLater(instance, () -> {
-            e.getBlockClicked().getRelative(e.getBlockFace()).setType(Material.AIR);
-            e.getPlayer().getInventory().setItem(e.getPlayer().getInventory().first(Material.BUCKET),
-                    new ItemStack(e.getBucket()));
-        }, 2L);
-    }
-
-    @EventHandler
-    public void onBucketFill(PlayerBucketFillEvent e) {
-        e.setCancelled(true);
+        this.practiceListener = new PracticeListener(this);
+        instance.getCommand("practice").setExecutor(new PracticeCommand());
     }
 
     public void joinPractice(final Player p) {
