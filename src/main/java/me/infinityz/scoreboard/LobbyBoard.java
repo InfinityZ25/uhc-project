@@ -7,19 +7,24 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import me.infinityz.UHC;
+import me.infinityz.scenarios.IScenario;
 
 /**
  * LobbyBoard
  */
-public class LobbyBoard extends IScoreboardSign {
+public class LobbyBoard extends ScoreboardSign {
     @Getter
     @Setter
     private int host_line, player_line, scenarios_start_line, scenarios_end_line;
-    private String players_line;
+    private String players_line, hosts_line;
 
     @Override
     public void update() {
-        super.queueUpdate(player_line, players_line.replace("<players>", System.currentTimeMillis() + ""));
+        super.queueUpdate(player_line, players_line.replace("<players>", Bukkit.getOnlinePlayers().size() + ""));
+        super.queueUpdate(host_line,
+                hosts_line.replace("<host>",
+                        UHC.getInstance().gameConfigManager.last_known_host_name.isEmpty() ? "Undefined"
+                                : UHC.getInstance().gameConfigManager.last_known_host_name));
         super.update();
         // Bukkit.broadcastMessage("message");
         // Important: #getClass()#getSimpleName() returns a string with the name of the
@@ -48,7 +53,10 @@ public class LobbyBoard extends IScoreboardSign {
             }
             if (line.toLowerCase().contains("<host>")) {
                 this.host_line = line_id;
-                line = line.replace("<host>", "Undefined");
+                this.hosts_line = line;
+                line = line.replace("<host>",
+                        UHC.getInstance().gameConfigManager.last_known_host_name.isEmpty() ? "Undefined"
+                                : UHC.getInstance().gameConfigManager.last_known_host_name);
             }
             if (line.toLowerCase().contains("<players>")) {
                 this.players_line = line;
@@ -57,14 +65,14 @@ public class LobbyBoard extends IScoreboardSign {
             }
             if (line.toLowerCase().contains("<scenarios>")) {
                 this.scenarios_start_line = line_id;
-                if (UHC.getInstance().scoreboardManager.scenariosSet.isEmpty()) {
+                if (UHC.getInstance().scenariosManager.getActiveScenarios().isEmpty()) {
                     line = line.replace("<scenarios>", " - Vanilla");
                     this.scenarios_end_line = line_id;
                 } else {
-                    for (String string : UHC.getInstance().scoreboardManager.scenariosSet) {
-                        if (UHC.getInstance().scoreboardManager.scenariosSet.isEmpty())
+                    for (IScenario scenario : UHC.getInstance().scenariosManager.getActiveScenarios()) {
+                        if (UHC.getInstance().scenariosManager.getActiveScenarios().isEmpty())
                             return;
-                        this.setLine(line_id, " - " + string);
+                        this.setLine(line_id, " - " + scenario.getClass().getSimpleName());
                         line_id--;
                     }
                     this.scenarios_end_line = line_id + 1;

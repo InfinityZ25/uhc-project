@@ -3,15 +3,17 @@ package me.infinityz.commands;
 import java.lang.reflect.Field;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
+import org.bukkit.util.Vector;
 
 import me.infinityz.UHC;
-import me.infinityz.border.Border;
+import me.infinityz.border.BedrockBorderTask;
 import me.infinityz.protocol.Reflection;
 import me.infinityz.scatter.ScatterTask;
 import me.infinityz.scatter.TeleportTask;
@@ -58,7 +60,7 @@ public class GlobalCommands implements CommandExecutor {
                 int i = Integer.parseInt(args[1]);
                 int wall_size = Integer.parseInt(args[2]);
                 // putWall(player.getLocation().getWorld(), i, wall_size);
-                Border borderTask = new Border(player.getLocation().getWorld(), i, wall_size,
+                BedrockBorderTask borderTask = new BedrockBorderTask(player.getLocation().getWorld(), i, wall_size,
                         Integer.parseInt(args[3]));
                 borderTask.runTaskTimer(instance, 0, Integer.parseInt(args[4]));
                 break;
@@ -140,22 +142,32 @@ public class GlobalCommands implements CommandExecutor {
 
                 break;
             }
-            case "rate":{
-                switch(args[1].toLowerCase()){
-                    case "apple":{
-                        Bukkit.broadcastMessage("Applec rate: " + instance.gameConfigManager.gameConfig.apple_rate);
-                        instance.gameConfigManager.gameConfig.apple_rate = Double.parseDouble(args[2]);
-                        Bukkit.broadcastMessage("New Apple rate: " + instance.gameConfigManager.gameConfig.apple_rate);
-                        break;
-                    }
-                    case "flint":{
-                        Bukkit.broadcastMessage("Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
-                        
-                        instance.gameConfigManager.gameConfig.flint_rate = Double.parseDouble(args[2]);
-                        Bukkit.broadcastMessage("New Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
-                        break;
-                    }
+            case "rate": {
+                switch (args[1].toLowerCase()) {
+                case "apple": {
+                    Bukkit.broadcastMessage("Applec rate: " + instance.gameConfigManager.gameConfig.apple_rate);
+                    instance.gameConfigManager.gameConfig.apple_rate = Double.parseDouble(args[2]);
+                    Bukkit.broadcastMessage("New Apple rate: " + instance.gameConfigManager.gameConfig.apple_rate);
+                    break;
                 }
+                case "flint": {
+                    Bukkit.broadcastMessage("Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
+
+                    instance.gameConfigManager.gameConfig.flint_rate = Double.parseDouble(args[2]);
+                    Bukkit.broadcastMessage("New Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
+                    break;
+                }
+                }
+                break;
+            }
+            case "velocity": {/*
+                               * // Get velocity unit vector: Vector unitVector =
+                               * player.getLocation().toVector().subtract(player.getLocation().toVector())
+                               * .normalize(); // Set speed and push entity:
+                               * player.setVelocity(unitVector.multiply(Double.parseDouble(args[1])));
+                               */
+                player.setVelocity(player.getLocation().getDirection().multiply(Double.parseDouble(args[1])));
+                // knockBack(player, player.getLocation());
                 break;
             }
 
@@ -164,6 +176,17 @@ public class GlobalCommands implements CommandExecutor {
             return true;
         }
         return false;
+    }
+
+    public static void knockBack(final Player player, final Location loc) {
+        // player -> player to knockback
+        // loc -> location to knockback the player away from.
+        final Vector v = player.getLocation().toVector().subtract(loc.toVector()).normalize().multiply(1).setY(.1);
+        if (player.isInsideVehicle()) {
+            player.getVehicle().setVelocity(v);
+            return;
+        }
+        player.setVelocity(v);
     }
 
 }

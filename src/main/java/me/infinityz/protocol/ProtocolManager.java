@@ -8,7 +8,7 @@ import org.bukkit.potion.PotionEffectType;
 import io.netty.channel.Channel;
 import me.infinityz.UHC;
 import me.infinityz.protocol.Reflection.FieldAccessor;
-import me.infinityz.scoreboard.IScoreboardSign;
+import me.infinityz.scoreboard.ScoreboardSign;
 
 /**
  * ProtocolManager
@@ -20,15 +20,15 @@ public class ProtocolManager {
     private FieldAccessor<String> objectiveName = Reflection.getField(scoreboardClass, String.class, 0);
     private FieldAccessor<Object> displayMode = Reflection.getField(scoreboardClass, Object.class, 2);
 
-    private Class<?> windowData = Reflection.getClass("{nms}.PacketPlayOutWindowData");    
-    private FieldAccessor<Integer> othervalue = Reflection.getField(windowData, int.class, 0);   
-    private FieldAccessor<Integer> windowID = Reflection.getField(windowData, int.class, 1);   
+    private Class<?> windowData = Reflection.getClass("{nms}.PacketPlayOutWindowData");
+    private FieldAccessor<Integer> othervalue = Reflection.getField(windowData, int.class, 0);
+    private FieldAccessor<Integer> windowID = Reflection.getField(windowData, int.class, 1);
     private FieldAccessor<Integer> value = Reflection.getField(windowData, int.class, 2);
 
     private Class<?> enchantClass = Reflection.getClass("{nms}.PacketPlayInEnchantItem");
     private Class<?> experienceClass = Reflection.getClass("{nms}.PacketPlayOutExperience");
 
-    private Class<?> entityEffectClass = Reflection.getClass("{nms}.PacketPlayOutEntityEffect");    
+    private Class<?> entityEffectClass = Reflection.getClass("{nms}.PacketPlayOutEntityEffect");
     private FieldAccessor<Byte> effectId = Reflection.getField(entityEffectClass, byte.class, 0);
 
     public TinyProtocol protocol;
@@ -38,10 +38,9 @@ public class ProtocolManager {
         protocol = new TinyProtocol(instance) {
 
             @Override
-            public Object onPacketInAsync(Player sender, Channel channel, Object packet) {               
+            public Object onPacketInAsync(Player sender, Channel channel, Object packet) {
                 return super.onPacketOutAsync(sender, channel, packet);
             }
-            
 
             @Override
             public Object onPacketOutAsync(Player reciever, Channel channel, Object packet) {
@@ -52,15 +51,17 @@ public class ProtocolManager {
                         Class<?> b = Reflection.getClass(ping.getClass().getName());
                         try {
                             Method f = b.getMethod("values");
-                            IScoreboardSign.setField(packet, "c", ((Object[]) f.invoke(null))[0]);
+                            ScoreboardSign.setField(packet, "c", ((Object[]) f.invoke(null))[0]);
                         } catch (Exception io) {
                             io.printStackTrace();
                         }
                     }
 
-                }else if (entityEffectClass.isInstance(packet) && !UHC.getInstance().gameConfigManager.gameConfig.absorption){//Absorptionless on a packet level
+                } else if (entityEffectClass.isInstance(packet)
+                        && !UHC.getInstance().gameConfigManager.gameConfig.absorption) {// Absorptionless on a packet
+                                                                                        // level
                     byte id = effectId.get(packet);
-                    if(id == (byte)22){
+                    if (id == (byte) 22) {
                         reciever.removePotionEffect(PotionEffectType.ABSORPTION);
                         return null;
                     }
@@ -70,6 +71,6 @@ public class ProtocolManager {
             }
 
         };
-        
+
     }
 }

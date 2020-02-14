@@ -1,7 +1,5 @@
 package me.infinityz.events.listeners;
 
-import java.util.Random;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -18,7 +16,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import me.infinityz.UHC;
+import me.infinityz.scoreboard.LobbyBoard;
 import me.infinityz.scoreboard.ScoreboardSign;
+import me.infinityz.teams.objects.Team;
 import net.md_5.bungee.api.ChatColor;
 
 /**
@@ -53,40 +53,35 @@ public class LobbyListeners extends SkeletonListener {
             player.removePotionEffect(effect.getType());
         });
         // Start sending the scoreboard in a asynchronus fashion to prevent overload.
+        Bukkit.getScheduler().runTaskAsynchronously(UHC.getInstance(), () -> {
+            Bukkit.getOnlinePlayers().stream().filter(it -> player != it).forEach(it -> {
+                ScoreboardSign sign = instance.scoreboardManager.scoreboardMap.get(it.getUniqueId());
+                if (sign != null) {
+                    sign.updatePlayerOrder(player);
+                    sign.getPlayer().sendPacket(ScoreboardSign.add3Remove4(3, player.getName(), "1111"));
+                }
+            });
 
-        ScoreboardSign scoreboardSign = new ScoreboardSign(player, "&bArcadens UHC");
-        scoreboardSign.create();
-        scoreboardSign.setLine(8, "&7Host: &f<host>");
-        scoreboardSign.setLine(7, "");
-        scoreboardSign.setLine(6, "&7Players: &f<players>");
-        scoreboardSign.setLine(5, "");
-        scoreboardSign.setLine(4, "&7Scenarios:");
-        scoreboardSign.setLine(3, " - Vanilla");
-        scoreboardSign.setLine(2, "");
-        scoreboardSign.setLine(1, "&b  Arcadens.net  ");
-        Bukkit.getScheduler().runTaskTimerAsynchronously(instance, () -> {
-            String str = "&7Players:&f " + System.currentTimeMillis();
-            scoreboardSign.setLine(8, "&7Host: &f" + player.getName());
-            scoreboardSign.setLine(6, str);
+            Team team = instance.teamManager.findPlayersTeam(player.getUniqueId());
+            if (team != null) {
+                team.team_members.forEach(it -> {
+                    Player pl = Bukkit.getPlayer(it);
+                    if (pl != null && pl.isOnline()) {
+                        if (pl.getUniqueId() != player.getUniqueId()) {
+                            ScoreboardSign sign = instance.scoreboardManager.scoreboardMap.get(pl.getUniqueId());
+                            if (sign != null) {
+                                sign.getPlayer().sendPacket(ScoreboardSign.add3Remove4(3, player.getName(), "0001"));
+                                sign.updatePlayerOrder(pl);
+                            }
+                        }
+                    }
+                });
+            }
 
-            Long l = new Random().nextLong();
-            Long l2 = new Random().nextLong();
-            String stt = " - " + (l > 0 ? l : (l) * -1) + "" + (l2 > 0 ? l2 : (l2) * -1);
-            scoreboardSign.setLine(3, stt);
-            scoreboardSign.updatePlayerOrder();
+        });
 
-        }, 1L, 10L);
-        /*
-         * new BukkitRunnable() {
-         * 
-         * @Override public void run() { new LobbyBoard(player, "&bArcadens UHC",
-         * "&7Host:&f <host>", "<spacer>", "&7Players: &f<players>", "<spacer>",
-         * "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net  ");
-         * 
-         * }
-         * 
-         * }.runTaskAsynchronously(instance);
-         */
+        new LobbyBoard(player, "&bArcadens UHC", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>", "<spacer>",
+                "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net ");
     }
 
     @EventHandler

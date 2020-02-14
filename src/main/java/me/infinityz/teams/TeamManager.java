@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import me.infinityz.UHC;
 import me.infinityz.teams.commands.TeamCommand;
-import me .infinityz.teams.objects.Team;
-import me .infinityz.teams.objects.TeamInvite;
+import me.infinityz.teams.listener.TeamListener;
+import me.infinityz.teams.objects.Team;
+import me.infinityz.teams.objects.TeamInvite;
 import me.infinityz.whitelist.objects.NoDuplicatesList;;
 
 /**
@@ -34,6 +36,7 @@ public class TeamManager {
         TeamCommand teamCommand = new TeamCommand(this);
         instance.getCommand("team").setExecutor(teamCommand);
         instance.getCommand("team").setTabCompleter(teamCommand);
+        Bukkit.getPluginManager().registerEvents(new TeamListener(), instance);
     }
 
     // Use the keyword synchronized to avoid teams being created with the same team
@@ -61,11 +64,11 @@ public class TeamManager {
         return invite;
     }
 
-    public TeamInvite getInvite(UUID player, UUID target){
+    public TeamInvite getInvite(UUID player, UUID target) {
         for (TeamInvite invite : teamInvites) {
-            if(player == invite.target && target == invite.sender){
+            if (player == invite.target && target == invite.sender) {
                 return invite;
-            }            
+            }
         }
         return null;
     }

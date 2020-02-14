@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 
 import me.infinityz.UHC;
 
-public class UHCBoard extends IScoreboardSign {
+public class UHCBoard extends ScoreboardSign {
     /*
      * These are all the values that we need. I could use a HashMap but that
      * consumes a lot of ram; it's way better to just use ints. The integers are not

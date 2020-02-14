@@ -8,7 +8,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * Border
  */
-public class Border extends BukkitRunnable {
+public class BedrockBorderTask extends BukkitRunnable {
     // Take variables from the instance method.
     World world;
     int size, height, maxtick, northInt, southInt, westInt, eastInt;
@@ -19,7 +19,7 @@ public class Border extends BukkitRunnable {
     // Initial time
     long start;
 
-    public Border(World world, int size, int height, int maxtick) {
+    public BedrockBorderTask(World world, int size, int height, int maxtick) {
         this.world = world;
         this.size = size;
         this.height = height;

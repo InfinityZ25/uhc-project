@@ -42,7 +42,7 @@ public class UHC extends JavaPlugin implements Listener {
     public TeamManager teamManager;
     public ScenariosManager scenariosManager;
     public GameConfigManager gameConfigManager;
-    //Deprecated, move this out of here 
+    // Deprecated, move this out of here
     public List<Location> locations;
 
     public static UHC getInstance() {
@@ -65,6 +65,7 @@ public class UHC extends JavaPlugin implements Listener {
         this.protocolManager = new ProtocolManager(this);
         this.scenariosManager = new ScenariosManager();
         this.gameConfigManager = new GameConfigManager(this);
+        GameStage.stage = GameStage.LOBBY;
     }
 
     @Override
@@ -91,9 +92,10 @@ public class UHC extends JavaPlugin implements Listener {
         }
     }
 
-    public enum GameStage{
-        LOADING, PRE_GAME, SCATTERING, IN_GAME, DEATHMATCH, DONE;
+    public enum GameStage {
+        LOADING, LOBBY, PRE_GAME, SCATTERING, IN_GAME, DEATHMATCH, DONE;
+
         public static GameStage stage;
     }
-    
+
 }

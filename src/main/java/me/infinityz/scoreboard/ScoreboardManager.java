@@ -14,7 +14,7 @@ import me.infinityz.UHC;
  * ScoreboardManager
  */
 public class ScoreboardManager {
-    public Map<UUID, IScoreboardSign> scoreboardMap;
+    public Map<UUID, ScoreboardSign> scoreboardMap;
     public boolean global_update;
     @Getter
     public HashSet<String> scenariosSet;

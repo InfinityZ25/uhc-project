@@ -4,9 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -54,21 +52,22 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
 
             return true;
         }
-        if(args.length < 2)return false;
+        if (args.length < 2)
+            return false;
         try {
             Class<?> class1 = GameConfigManager.gameConfig.getClass();
             Field field = class1.getDeclaredField(args[0]);
             Object data;
-            try{
+            try {
                 data = Integer.parseInt(args[1]);
-            }catch(Exception e){
+            } catch (Exception e) {
                 try {
                     data = Double.parseDouble(args[1]);
-                    
+
                 } catch (Exception e2) {
                     data = Boolean.parseBoolean(args[1]);
                 }
-                
+
             }
             sender.sendMessage(field.getName() + " has been set to " + data.toString());
             field.set(GameConfigManager.gameConfig, data);
@@ -76,17 +75,16 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
             e.printStackTrace();
         }
 
-        
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String arg2, String[] args) {
-        if(args.length == 1){
-            if(args[0].isEmpty()){
+        if (args.length == 1) {
+            if (args[0].isEmpty()) {
                 return Arrays.asList(helpArray);
             }
-            
+
             final List<String> list = new ArrayList<>();
             for (String string : helpArray) {
                 // Check if it matches any of the arguments available then autocomplete
@@ -94,6 +92,39 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
                     list.add(string);
             }
             return list;
+        }
+        if (args.length == 2) {
+            switch (args[0].toLowerCase()) {
+            case "horses":
+            case "horsehealing":
+            case "horsearmor":
+            case "nether":
+            case "strength_1":
+            case "strength_2":
+            case "invisibility_potion":
+            case "regeneration_potion":
+            case "speed_1":
+            case "speed_2":
+            case "natural_regeneration":
+            case "ender_pearl_damage":
+            case "poison_1":
+            case "poison_2":
+            case "absorption":
+            case "goldenheads":
+            case "headpost":
+            case "godapples": {
+                final List<String> list = new ArrayList<>(Arrays.asList(new String[] { "true", "false" }));
+                if (args[1].isEmpty()) {
+                    return list;
+                }
+                for (String string : new ArrayList<>(list)) {
+                    if (!string.toLowerCase().startsWith(args[1].toLowerCase()))
+                        list.remove(string);
+                }
+                return list;
+            }
+            }
+
         }
         return null;
     }

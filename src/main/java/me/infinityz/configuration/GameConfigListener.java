@@ -17,7 +17,6 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
@@ -103,27 +102,29 @@ public class GameConfigListener implements Listener {
                 e.getEntity().sendMessage("Horses are disabled!");
                 e.setCancelled(true);
             }
-            if(!gameConfigManager.gameConfig.horsearmor){
-                Horse horse = (Horse)e.getMount();
+            if (!gameConfigManager.gameConfig.horsearmor) {
+                Horse horse = (Horse) e.getMount();
                 horse.getInventory().setArmor(null);
             }
 
         }
     }
+
     @EventHandler
-    public void onHorse(InventoryOpenEvent e){
-        if(!gameConfigManager.gameConfig.horsearmor){
-            if(e.getInventory() instanceof HorseInventory){
+    public void onHorse(InventoryOpenEvent e) {
+        if (!gameConfigManager.gameConfig.horsearmor) {
+            if (e.getInventory() instanceof HorseInventory) {
                 HorseInventory horse = (HorseInventory) e.getInventory();
                 horse.setArmor(null);
             }
         }
 
     }
+
     @EventHandler
-    public void onHorse(InventoryCloseEvent e){
-        if(!gameConfigManager.gameConfig.horsearmor){
-            if(e.getInventory() instanceof HorseInventory){
+    public void onHorse(InventoryCloseEvent e) {
+        if (!gameConfigManager.gameConfig.horsearmor) {
+            if (e.getInventory() instanceof HorseInventory) {
                 HorseInventory horse = (HorseInventory) e.getInventory();
                 horse.setArmor(null);
             }

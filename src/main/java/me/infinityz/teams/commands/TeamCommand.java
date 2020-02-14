@@ -153,11 +153,12 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                     }
                     invite.teamToJoin.addMember(player.getUniqueId());
 
-                    Bukkit.getPluginManager().callEvent(new TeamJoinedEvent(team, player));
+                    Bukkit.getPluginManager().callEvent(new TeamJoinedEvent(invite.teamToJoin, player));
                     invite.teamToJoin.sendTeamMessage(ChatColor.GREEN + player.getName() + " has joined the team!");
 
-                    teamManager.map.put(player.getUniqueId(), team);
+                    teamManager.map.put(player.getUniqueId(), invite.teamToJoin);
                     teamManager.teamInvites.remove(invite);
+                    invite = null;
                     return true;
                 }
                 sender.sendMessage(args[1] + " is not online!");
@@ -223,6 +224,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
                                 "You've been kicked from Team " + team.team_name + " by " + sender.getName());
                         team.sendTeamMessage(target.getName() + " has been kicked from the team!");
 
+                        teamManager.map.remove(target.getUniqueId());
                         Bukkit.getPluginManager().callEvent(new TeamKickedEvent(team, target, player));
                         return true;
                     }
@@ -344,6 +346,7 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             team.team_members.remove(player.getUniqueId());
             teamManager.map.remove(player.getUniqueId());
             team.sendTeamMessage("Your team has been disbanded by " + sender.getName());
+            teamManager.teamList.remove(team);
             team.team_members.forEach(uuid -> teamManager.map.remove(uuid));
             team.team_members.clear();
             break;
