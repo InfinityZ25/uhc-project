@@ -16,9 +16,8 @@ import org.bukkit.util.Vector;
 import me.infinityz.UHC;
 import me.infinityz.UHC.GameStage;
 import me.infinityz.border.BedrockBorderTask;
+import me.infinityz.logic.PreGameStartEvent;
 import me.infinityz.protocol.Reflection;
-import me.infinityz.scatter.ScatterTask;
-import me.infinityz.scatter.TeleportTask;
 import me.infinityz.scenarios.IScenario;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
@@ -47,17 +46,6 @@ public class GlobalCommands implements CommandExecutor {
             Player player = (Player) sender;
             // Obtain, if exist, the player's scoreboard.
             switch (args[0].toLowerCase()) {
-            case "gen": {
-                instance.scatter.locations.clear();
-                instance.scatter.findLotsOfLocation(Bukkit.getWorlds().get(0), Integer.parseInt(args[1]),
-                        Integer.parseInt(args[2]), Integer.parseInt(args[3]));
-                break;
-            }
-            case "tp": {
-                player.sendMessage("Teleporting you to location #" + args[1]);
-                player.teleport(instance.scatter.locations.get(Integer.parseInt(args[1])));
-                break;
-            }
             case "border": {
                 int i = Integer.parseInt(args[1]);
                 int wall_size = Integer.parseInt(args[2]);
@@ -76,13 +64,6 @@ public class GlobalCommands implements CommandExecutor {
                 break;
             }
             case "scatter": {
-                ScatterTask scatterTask = new ScatterTask(instance, player.getWorld(), Integer.parseInt(args[1]),
-                        Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]));
-                scatterTask.runTaskTimer(instance, 0, 5);
-                break;
-            }
-            case "tps": {
-                new TeleportTask(instance).runTask(instance);
                 break;
             }
             case "practice": {
@@ -121,6 +102,9 @@ public class GlobalCommands implements CommandExecutor {
                         }
                     });
                     UHC.getInstance().practiceManager.practiceHashSet.clear();
+                    if (UHC.getInstance().teamManager.team_enabled) {
+                        UHC.getInstance().teamManager.team_management = false;
+                    }
                     HandlerList.unregisterAll(UHC.getInstance().practiceManager.practiceListener);
                 }
                 // Whitelist everyone and clear the whitelistors
@@ -133,6 +117,8 @@ public class GlobalCommands implements CommandExecutor {
                 // Maybe call an event??
                 GameStage.stage = GameStage.PRE_GAME;
                 // Take it to the scatter task from now on!
+                // Call PreGameStartEvent;
+                Bukkit.getPluginManager().callEvent(new PreGameStartEvent(sender));
 
                 break;
             }

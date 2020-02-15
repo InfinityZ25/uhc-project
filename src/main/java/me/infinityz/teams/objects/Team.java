@@ -24,6 +24,7 @@ public class Team {
     public UUID team_leader;
     public ArrayList<UUID> team_members;
     public String team_name;
+    public int team_kills;
 
     // Recursive constructor to allow the usage of player instead of uuid
     public Team(Player player, String team_name) {

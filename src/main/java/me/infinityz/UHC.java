@@ -1,11 +1,9 @@
 package me.infinityz;
 
 import java.io.File;
-import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,9 +12,9 @@ import me.infinityz.combatlogger.SkeletonCombatLogger;
 import me.infinityz.commands.CommandManager;
 import me.infinityz.configuration.GameConfigManager;
 import me.infinityz.events.ListenerManager;
+import me.infinityz.player.PlayerManager;
 import me.infinityz.practice.PracticeManager;
 import me.infinityz.protocol.ProtocolManager;
-import me.infinityz.scatter.Scatter;
 import me.infinityz.scenarios.ScenariosManager;
 import me.infinityz.scoreboard.ScoreboardManager;
 import me.infinityz.teams.TeamManager;
@@ -35,15 +33,13 @@ public class UHC extends JavaPlugin implements Listener {
     public PracticeManager practiceManager;
     public CombatLoggerManager combatLoggerManager;
     public WorldManager worldManager;
-    public Scatter scatter;
     public SkeletonCombatLogger skeleton;
     public ProtocolManager protocolManager;
     public WhitelistManager whitelistManager;
     public TeamManager teamManager;
     public ScenariosManager scenariosManager;
     public GameConfigManager gameConfigManager;
-    // Deprecated, move this out of here
-    public List<Location> locations;
+    public PlayerManager playerManager;
 
     public static UHC getInstance() {
         return instance;
@@ -61,10 +57,10 @@ public class UHC extends JavaPlugin implements Listener {
         this.commandManager = new CommandManager(this);
         this.combatLoggerManager = new CombatLoggerManager(this);
         this.worldManager = new WorldManager(this);
-        this.scatter = new Scatter(this);
         this.protocolManager = new ProtocolManager(this);
         this.scenariosManager = new ScenariosManager();
         this.gameConfigManager = new GameConfigManager(this);
+        this.playerManager = new PlayerManager(this);
         GameStage.stage = GameStage.LOBBY;
     }
 

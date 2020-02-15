@@ -3,6 +3,7 @@ package me.infinityz.scoreboard;
 import org.bukkit.entity.Player;
 
 import me.infinityz.UHC;
+import me.infinityz.teams.objects.Team;
 
 public class UHCBoard extends ScoreboardSign {
     /*
@@ -11,7 +12,8 @@ public class UHCBoard extends ScoreboardSign {
      * initialized and public to avoid writting boiler plate code and not repeat
      * myself.
      */
-    public int timer, kills, teamKills, playersLeft, teamsLeft, currentBorder, spectators;
+    public int timer, player_kills, players_left, team_kills, team_left, border, spectators;
+    public String timer_line, player_kills_line, players_left_line, team_kills_line, team_left_line, border_line;
 
     public UHCBoard(final Player player, final String objectiveName, final String... lineStrings) {
         super(player, objectiveName);
@@ -25,13 +27,45 @@ public class UHCBoard extends ScoreboardSign {
         // Adding the capability to use the string <spacer> as a line separator.
         // Use a integer to keep track of the amount of spacer
         int spacer = 0;
-        for (int i = 0; i < lineStrings.length; i++) {
-            String line_name = lineStrings[i];
-            if (line_name.equalsIgnoreCase("<spacer>")) {
-                line_name = "§o" + toSpaceString(spacer);
+        int line_id = lineStrings.length;
+        for (String line : lineStrings) {
+            if (line.equalsIgnoreCase("<spacer>")) {
+                line = "§o" + toSpaceString(spacer);
                 spacer++;
             }
-            this.setLine(lineStrings.length - i, line_name);
+            if (line.toLowerCase().contains("<timer>")) {
+                this.timer = line_id;
+                this.timer_line = line;
+                line = line.replace("<timer>", "00:00");
+            }
+            if (line.toLowerCase().contains("<player_kills>")) {
+                this.player_kills = line_id;
+                this.player_kills_line = line;
+                line = line.replace("<player_kills>", UHC.getInstance().playerManager.getPlayersKills(player) + "");
+            }
+            if (line.toLowerCase().contains("<players_left>")) {
+                this.players_left = line_id;
+                this.players_left_line = line;
+                line = line.replace("<players_left>", UHC.getInstance().playerManager.getAlivePlayers() + "");
+            }
+            if (line.toLowerCase().contains("<team_kills>")) {
+                this.team_kills = line_id;
+                this.team_kills_line = line;
+                Team team = UHC.getInstance().teamManager.findPlayersTeam(player.getUniqueId());
+                line = line.replace("<team_kills>", (team == null ? 0 : team.team_kills) + "");
+            }
+            if (line.toLowerCase().contains("<teams_left>")) {
+                this.team_left = line_id;
+                this.team_left_line = line;
+                line = line.replace("<teams_left>", UHC.getInstance().playerManager.getTeamsLeft() + "");
+            }
+            if (line.toLowerCase().contains("<border>")) {
+                this.border = line_id;
+                this.border_line = line;
+                line = line.replace("<border>", UHC.getInstance().gameConfigManager.gameConfig.map_size + "");
+            }
+            this.setLine(line_id, line);
+            line_id--;
         }
         // Call the instance instead of accesing it locally to avoid consuming lots of
         // ram. Add the scoreboardSign to the scoreboardManager

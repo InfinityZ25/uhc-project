@@ -7,10 +7,19 @@ import org.bukkit.event.Listener;
 
 import me.infinityz.UHC;
 import me.infinityz.UHC.GameStage;
+import me.infinityz.logic.GameStartEvent;
+import me.infinityz.logic.GameStartedEvent;
+import me.infinityz.logic.PlayerScatteredEvent;
+import me.infinityz.logic.PreGameStartEvent;
+import me.infinityz.logic.ScatterLocationsFoundEvent;
+import me.infinityz.logic.ScatterTeleportCompletedEvent;
+import me.infinityz.scatter.Scatter;
+import me.infinityz.scatter.Teleport;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
 import me.infinityz.scoreboard.LobbyBoard;
 import me.infinityz.scoreboard.ScoreboardSign;
+import me.infinityz.scoreboard.UHCBoard;
 import me.infinityz.teams.events.TeamDisbandedEvent;
 import me.infinityz.teams.events.TeamJoinedEvent;
 import me.infinityz.teams.events.TeamKickedEvent;
@@ -174,6 +183,68 @@ public class TeamListener implements Listener {
 
             });
         });
+    }
+
+    @EventHandler
+    public void onPreGame(PreGameStartEvent e) {
+        // Handle pregame
+        // Obtain Scatter Locations (sync)
+        // Change 69 for the amount of players online plus a few more
+        new Scatter(Bukkit.getWorld("UHC"), UHC.getInstance().gameConfigManager.gameConfig.map_size, 100,
+                Bukkit.getOfflinePlayers().length + 5, 50).runTaskTimer(UHC.getInstance(), 0, 5L);
+        Bukkit.broadcastMessage("Calcuating scatter locations...");
+
+        // Teleport Players to scatter locations (sync)
+        // Give them the initial loot
+        // Prohibit them from moving until everyone is scattered
+
+        // Unfreeze everyone
+        // Heal and feed all players
+        // Change their scoreboard to an InGame Scoreboard
+        // Change the game stage to ingame
+
+        // Run the game Tick or game Loop to start counting
+    }
+
+    @EventHandler
+    public void onLocationsFound(ScatterLocationsFoundEvent e) {
+        new Teleport(UHC.getInstance(), e.getLocations(), 100).runTaskTimer(UHC.getInstance(), 0, 10);
+        Bukkit.broadcastMessage("All scatter locations have been found, teleporting!");
+
+    }
+
+    @EventHandler
+    public void teleportCompleted(ScatterTeleportCompletedEvent e) {
+        Bukkit.broadcastMessage("Scatter has been completed!");
+
+        Bukkit.getPluginManager().callEvent(new GameStartEvent());
+    }
+
+    @EventHandler
+    public void gameStartEvent(GameStartEvent e) {
+        // Maybe write code here to wait till tps are stables to start?
+        // Also instantiate the players as UHCPlayers and not spectators here.
+
+        Bukkit.getPluginManager().callEvent(new GameStartedEvent());
+    }
+
+    @EventHandler
+    public void gameStartedEvent(GameStartedEvent e) {
+        Bukkit.broadcastMessage("Game has officially started!");
+        UHC.getInstance().scoreboardManager.scoreboardMap.forEach((uuid, sb) -> {
+            sb.destroy();
+        });
+        UHC.getInstance().scoreboardManager.scoreboardMap.clear();
+        Bukkit.getOnlinePlayers()
+                .forEach(player -> new UHCBoard(player, "&bArcadens UHC", "&7Timer: &f<timer>", "<spacer>",
+                        "&7Your kills: &f<player_kills>", "<spacer>", "&7Players Left: &f<players_left>",
+                        "&7Border: &f<border>", "<spacer>", "&b  Arcadens.net "));
+        // If we reach this point, the game has officialy started
+    }
+
+    @EventHandler
+    public void playerScattered(PlayerScatteredEvent e) {
+        e.player.sendMessage("You've been scattered!");
     }
 
 }

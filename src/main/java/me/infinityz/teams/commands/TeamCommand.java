@@ -51,6 +51,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
         }
         switch (args[0].toLowerCase()) {
         case "create": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;
@@ -78,6 +82,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             break;
         }
         case "invite": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;
@@ -128,6 +136,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
         }
         case "join":
         case "accept": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;
@@ -170,6 +182,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
         }
         case "deny":
         case "reject": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;
@@ -198,6 +214,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
         }
         case "remove":
         case "kick": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;
@@ -243,6 +263,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             break;
         }
         case "leader": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;
@@ -283,6 +307,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             break;
         }
         case "leave": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;
@@ -326,6 +354,10 @@ public class TeamCommand implements CommandExecutor, TabCompleter {
             break;
         }
         case "disband": {
+            if (!teamManager.team_enabled) {
+                sender.sendMessage("Teams are currently disabled!");
+                return true;
+            }
             if (!teamManager.team_management) {
                 sender.sendMessage("Team management is disabled!");
                 return true;

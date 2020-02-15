@@ -9,16 +9,13 @@ import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import me.infinityz.UHC;
+import me.infinityz.logic.ScatterLocationsFoundEvent;
 
 /**
  * Scatter
  */
 public class Scatter extends BukkitRunnable {
-
-    private final UHC instance;
     public List<Location> locations;
-    public int scattered;
     private long milliseconds;
     public int quantity;
     public World world;
@@ -26,12 +23,13 @@ public class Scatter extends BukkitRunnable {
     public int distance_limit;
     public long max_delay;
 
-    public Scatter(final UHC instance) {
-        this.instance = instance;
+    public Scatter(World world, int radius, int distance_limit, int quantity, int max_delay_ms) {
+        this.world = world;
+        this.radius = radius;
+        this.quantity = quantity;
+        this.distance_limit = distance_limit;
+        this.max_delay = max_delay_ms;
         this.locations = new ArrayList<Location>();
-        this.scattered = 0;
-
-        // Bukkit.broadcastMessage("Starting to look for locations...");
     }
 
     @Override
@@ -45,17 +43,15 @@ public class Scatter extends BukkitRunnable {
                 final Location loc = findValidLocation(world, radius, distance_limit);
                 if (!isSafe(loc)) {
                     quantity++;
-
-                    Bukkit.broadcastMessage("Unsafe found");
                     continue;
                 }
-                instance.scatter.locations.add(centerLocation(loc));
-                Bukkit.broadcastMessage("Location " + quantity + " found");
+                locations.add(centerLocation(loc));
 
             }
             return;
         }
-        Bukkit.broadcastMessage("All locations found");
+        // Pass it down to a different task
+        Bukkit.getPluginManager().callEvent(new ScatterLocationsFoundEvent(locations));
         this.cancel();
 
     }
@@ -84,7 +80,7 @@ public class Scatter extends BukkitRunnable {
             return true;
         // Loop through all the other locations and make sure the distance limit is
         // enough.
-        for (final Location loc : instance.scatter.locations)
+        for (final Location loc : locations)
             if (location.distance(loc) <= distance_limit)
                 return false;
         // If previous checks weren't met then this location must be valid.
@@ -97,7 +93,6 @@ public class Scatter extends BukkitRunnable {
         final Location loc = findScatterLocation(world, radius);
         // Assert that the location found is valid and don't stop looping until found.
         if (!validateLocation(loc, distance_limit)) {
-            Bukkit.broadcastMessage("Not valid location found!");
             findValidLocation(world, radius, distance_limit);
         }
         // If this point is reached, it means the location returned is valid.
@@ -105,17 +100,14 @@ public class Scatter extends BukkitRunnable {
     }
 
     public void findLotsOfLocation(final World world, final int radius, final int distance_limit, final int ammount) {
-        long time = System.currentTimeMillis();
         for (int i = 0; i < ammount; i++) {
             final Location loc = findValidLocation(world, radius, distance_limit);
             if (!isSafe(loc)) {
-                Bukkit.broadcastMessage("Unsafe found");
                 i--;
                 continue;
             }
             locations.add(centerLocation(loc));
         }
-        Bukkit.broadcastMessage("Locations found. It took " + (System.currentTimeMillis() - time) + "ms");
     }
 
     // Recursive method to avoid players spawning on walls.
