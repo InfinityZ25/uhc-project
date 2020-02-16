@@ -80,8 +80,8 @@ public class LobbyListeners extends SkeletonListener {
 
         });
 
-        new LobbyBoard(player, "&bArcadens UHC", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>", "<spacer>",
-                "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net ");
+        new LobbyBoard(player, "&3Arcadens UHC", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>", "<spacer>",
+                "&7Scenarios:", "<scenarios>", "<spacer>", "&3  Arcadens.net ");
     }
 
     @EventHandler

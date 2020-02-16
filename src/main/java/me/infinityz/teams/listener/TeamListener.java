@@ -3,16 +3,19 @@ package me.infinityz.teams.listener;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
 import me.infinityz.UHC;
 import me.infinityz.UHC.GameStage;
+import me.infinityz.events.listeners.IngameListeners;
 import me.infinityz.logic.GameStartEvent;
 import me.infinityz.logic.GameStartedEvent;
 import me.infinityz.logic.PlayerScatteredEvent;
 import me.infinityz.logic.PreGameStartEvent;
 import me.infinityz.logic.ScatterLocationsFoundEvent;
 import me.infinityz.logic.ScatterTeleportCompletedEvent;
+import me.infinityz.player.UHCPlayer;
 import me.infinityz.scatter.Scatter;
 import me.infinityz.scatter.Teleport;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
@@ -187,23 +190,20 @@ public class TeamListener implements Listener {
 
     @EventHandler
     public void onPreGame(PreGameStartEvent e) {
-        // Handle pregame
-        // Obtain Scatter Locations (sync)
-        // Change 69 for the amount of players online plus a few more
         new Scatter(Bukkit.getWorld("UHC"), UHC.getInstance().gameConfigManager.gameConfig.map_size, 100,
-                Bukkit.getOfflinePlayers().length + 5, 50).runTaskTimer(UHC.getInstance(), 0, 5L);
+                Bukkit.getOnlinePlayers().size() + 5, 50).runTaskTimer(UHC.getInstance(), 0, 5L);
         Bukkit.broadcastMessage("Calcuating scatter locations...");
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            if (UHC.getInstance().teamManager.team_enabled) {
+                new UHCPlayer(player.getUniqueId(),
+                        UHC.getInstance().teamManager.findPlayersTeam(player.getUniqueId()));
+            } else {
+                new UHCPlayer(player.getUniqueId());
+            }
+        });
+        HandlerList.unregisterAll(UHC.getInstance().listenerManager.lobbyListener);
+        // Register events for scatter.
 
-        // Teleport Players to scatter locations (sync)
-        // Give them the initial loot
-        // Prohibit them from moving until everyone is scattered
-
-        // Unfreeze everyone
-        // Heal and feed all players
-        // Change their scoreboard to an InGame Scoreboard
-        // Change the game stage to ingame
-
-        // Run the game Tick or game Loop to start counting
     }
 
     @EventHandler
@@ -224,22 +224,25 @@ public class TeamListener implements Listener {
     public void gameStartEvent(GameStartEvent e) {
         // Maybe write code here to wait till tps are stables to start?
         // Also instantiate the players as UHCPlayers and not spectators here.
+        UHC.getInstance().scoreboardManager.scoreboardMap.forEach((uuid, sb) -> {
+            sb.destroy();
+        });
+        UHC.getInstance().scoreboardManager.scoreboardMap.clear();
+        Bukkit.getOnlinePlayers().parallelStream()
+                .forEach(player -> new UHCBoard(player, "&3Arcadens UHC", "&7Timer: &f<timer>", "<spacer>",
+                        "&7Your kills: &f<player_kills>", "<spacer>", "&7Players Left: &f<players_left>",
+                        "&7Border: &f<border>", "<spacer>", "&3  Arcadens.net "));
 
         Bukkit.getPluginManager().callEvent(new GameStartedEvent());
+        // Register ingameevents
+        UHC.getInstance().listenerManager.ingameListener = new IngameListeners(UHC.getInstance());
+        GameStage.stage = GameStage.IN_GAME;
     }
 
     @EventHandler
     public void gameStartedEvent(GameStartedEvent e) {
         Bukkit.broadcastMessage("Game has officially started!");
-        UHC.getInstance().scoreboardManager.scoreboardMap.forEach((uuid, sb) -> {
-            sb.destroy();
-        });
-        UHC.getInstance().scoreboardManager.scoreboardMap.clear();
-        Bukkit.getOnlinePlayers()
-                .forEach(player -> new UHCBoard(player, "&bArcadens UHC", "&7Timer: &f<timer>", "<spacer>",
-                        "&7Your kills: &f<player_kills>", "<spacer>", "&7Players Left: &f<players_left>",
-                        "&7Border: &f<border>", "<spacer>", "&b  Arcadens.net "));
-        // If we reach this point, the game has officialy started
+        UHC.getInstance().gameLogicManager.gameLogicTask.runTaskTimerAsynchronously(UHC.getInstance(), 20, 20);
     }
 
     @EventHandler

@@ -12,6 +12,7 @@ import me.infinityz.combatlogger.SkeletonCombatLogger;
 import me.infinityz.commands.CommandManager;
 import me.infinityz.configuration.GameConfigManager;
 import me.infinityz.events.ListenerManager;
+import me.infinityz.logic.GameLogicManager;
 import me.infinityz.player.PlayerManager;
 import me.infinityz.practice.PracticeManager;
 import me.infinityz.protocol.ProtocolManager;
@@ -40,6 +41,7 @@ public class UHC extends JavaPlugin implements Listener {
     public ScenariosManager scenariosManager;
     public GameConfigManager gameConfigManager;
     public PlayerManager playerManager;
+    public GameLogicManager gameLogicManager;
 
     public static UHC getInstance() {
         return instance;
@@ -55,12 +57,13 @@ public class UHC extends JavaPlugin implements Listener {
         this.practiceManager = new PracticeManager(this);
         this.listenerManager = new ListenerManager(this);
         this.commandManager = new CommandManager(this);
-        this.combatLoggerManager = new CombatLoggerManager(this);
         this.worldManager = new WorldManager(this);
         this.protocolManager = new ProtocolManager(this);
         this.scenariosManager = new ScenariosManager();
         this.gameConfigManager = new GameConfigManager(this);
         this.playerManager = new PlayerManager(this);
+        this.gameLogicManager = new GameLogicManager(this);
+        this.combatLoggerManager = new CombatLoggerManager(this);
         GameStage.stage = GameStage.LOBBY;
     }
 

@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -30,91 +31,95 @@ import net.minecraft.server.v1_8_R3.World;
 /**
  * SkeletonCombatLogger
  */
-public class SkeletonCombatLogger extends EntitySkeleton{
+public class SkeletonCombatLogger extends EntitySkeleton {
 
-    public SkeletonCombatLogger(World world){
+    public SkeletonCombatLogger(World world) {
         super(world);
-        
+
         try {
             Field bField = PathfinderGoalSelector.class.getDeclaredField("b");
             bField.setAccessible(true);
             Field cField = PathfinderGoalSelector.class.getDeclaredField("c");
             cField.setAccessible(true);
-   
+
             bField.set(goalSelector, new UnsafeList<PathfinderGoalSelector>());
             bField.set(targetSelector, new UnsafeList<PathfinderGoalSelector>());
             cField.set(goalSelector, new UnsafeList<PathfinderGoalSelector>());
             cField.set(targetSelector, new UnsafeList<PathfinderGoalSelector>());
         } catch (Exception e) {
             e.printStackTrace();
+        }
     }
-}
 
     public PlayerInventory playerInventory;
+    public UUID uuid;
 
     @Override
-    protected String z() { return ""; }
+    protected String z() {
+        return "";
+    }
 
     @Override
     public void collide(Entity entity) {
     }
+
     @Override
     public void g(double d0, double d1, double d2) {
     }
 
     @Override
-    public void m(){
+    public void m() {
         super.m();
-      }
+    }
 
     @Override
     protected void dropDeathLoot(boolean flag, int i) {
-        Bukkit.broadcastMessage(this.getCustomName() + " has died!");
-        if(playerInventory != null){
-
-            //Continue here. Call a custom event, CombatLoggerDeathEvent(UUID uuid, PlayerInventory playerInventory)
-            // And from then on, handle everything. Also, listen to entitydeathevent and check if name starts with CombatLogger.
-
-        }
+        Bukkit.getPluginManager().callEvent(new CombatLoggerDeathEvent(this.uuid));
     }
 
-    
-    public Skeleton spawn(Location loc){
+    public Skeleton spawn(Location loc) {
         World mcWorld = ((CraftWorld) loc.getWorld()).getHandle();
         final SkeletonCombatLogger customEnt = new SkeletonCombatLogger(mcWorld);
 
         customEnt.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-        ((CraftLivingEntity) customEnt.getBukkitEntity()).setRemoveWhenFarAway(false); //Do we want to remove it when the NPC is far away? I won
+        ((CraftLivingEntity) customEnt.getBukkitEntity()).setRemoveWhenFarAway(false); // Do we want to remove it when
+                                                                                       // the NPC is far away? I won
         mcWorld.addEntity(customEnt, SpawnReason.CUSTOM);
         return (Skeleton) customEnt.getBukkitEntity();
     }
 
-    public Skeleton spawn(Player player){
+    public Skeleton spawn(Player player) {
         Location loc = player.getLocation();
         World mcWorld = ((CraftWorld) loc.getWorld()).getHandle();
         final SkeletonCombatLogger customEnt = new SkeletonCombatLogger(mcWorld);
         customEnt.playerInventory = player.getInventory();
         customEnt.setHealth(Float.parseFloat(player.getHealth() + ""));
+        customEnt.setCustomNameVisible(true);
+        customEnt.setCustomName("[Combat Logger] " + player.getName());
 
         toInv(player.getInventory(), customEnt);
+        customEnt.uuid = player.getUniqueId();
 
         customEnt.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-        ((CraftLivingEntity) customEnt.getBukkitEntity()).setRemoveWhenFarAway(false); //Do we want to remove it when the NPC is far away? I won
+        ((CraftLivingEntity) customEnt.getBukkitEntity()).setRemoveWhenFarAway(false); // Do we want to remove it when
+                                                                                       // the NPC is far away? I won
         mcWorld.addEntity(customEnt, SpawnReason.CUSTOM);
-        return (Skeleton) customEnt.getBukkitEntity();        
+        return (Skeleton) customEnt.getBukkitEntity();
     }
 
-    public void toInv(PlayerInventory inventory, EntitySkeleton entitySkeleton){
+    public void toInv(PlayerInventory inventory, EntitySkeleton entitySkeleton) {
         ItemStack boots = CraftItemStack.asNMSCopy(inventory.getBoots());
         ItemStack leggings = CraftItemStack.asNMSCopy(inventory.getLeggings());
         ItemStack chestplate = CraftItemStack.asNMSCopy(inventory.getChestplate());
         org.bukkit.inventory.ItemStack preHelmet = inventory.getHelmet();
-        //In case the helmet object is null or not existent, add a fake stick helmet to avoid entity from flashing.
-        if(preHelmet == null || preHelmet.getType() ==Material.AIR)preHelmet = new org.bukkit.inventory.ItemStack(Material.STICK);        
+        // In case the helmet object is null or not existent, add a fake stick helmet to
+        // avoid entity from flashing.
+        if (preHelmet == null || preHelmet.getType() == Material.AIR)
+            preHelmet = new org.bukkit.inventory.ItemStack(Material.STICK);
         ItemMeta meta = preHelmet.getItemMeta();
-        if(meta != null){            
-        meta.spigot().setUnbreakable(true);
-        preHelmet.setItemMeta(meta);
+        if (meta != null) {
+            meta.spigot().setUnbreakable(true);
+            preHelmet.setItemMeta(meta);
         }
         ItemStack helmet = CraftItemStack.asNMSCopy(preHelmet);
         ItemStack hand = CraftItemStack.asNMSCopy(inventory.getItemInHand());
@@ -125,30 +130,31 @@ public class SkeletonCombatLogger extends EntitySkeleton{
         entitySkeleton.setEquipment(4, helmet);
 
     }
-    
-    public void registerEntity(String name, int id, Class<? extends EntityInsentient> nmsClass, Class<? extends EntityInsentient> customClass){
+
+    public void registerEntity(String name, int id, Class<? extends EntityInsentient> nmsClass,
+            Class<? extends EntityInsentient> customClass) {
         try {
-     
+
             List<Map<?, ?>> dataMap = new ArrayList<Map<?, ?>>();
-            for (Field f : EntityTypes.class.getDeclaredFields()){
-                if (f.getType().getSimpleName().equals(Map.class.getSimpleName())){
+            for (Field f : EntityTypes.class.getDeclaredFields()) {
+                if (f.getType().getSimpleName().equals(Map.class.getSimpleName())) {
                     f.setAccessible(true);
                     dataMap.add((Map<?, ?>) f.get(null));
                 }
             }
-     
-            if (dataMap.get(2).containsKey(id)){
+
+            if (dataMap.get(2).containsKey(id)) {
                 dataMap.get(0).remove(name);
                 dataMap.get(2).remove(id);
             }
-     
+
             Method method = EntityTypes.class.getDeclaredMethod("a", Class.class, String.class, int.class);
             method.setAccessible(true);
             method.invoke(null, customClass, name, id);
-     
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
 }

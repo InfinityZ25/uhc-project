@@ -3,7 +3,6 @@ package me.infinityz.scoreboard;
 import org.bukkit.entity.Player;
 
 import me.infinityz.UHC;
-import me.infinityz.teams.objects.Team;
 
 public class UHCBoard extends ScoreboardSign {
     /*
@@ -36,12 +35,13 @@ public class UHCBoard extends ScoreboardSign {
             if (line.toLowerCase().contains("<timer>")) {
                 this.timer = line_id;
                 this.timer_line = line;
-                line = line.replace("<timer>", "00:00");
+                line = line.replace("<timer>", formatTime(UHC.getInstance().gameLogicManager.game_time));
             }
             if (line.toLowerCase().contains("<player_kills>")) {
                 this.player_kills = line_id;
                 this.player_kills_line = line;
-                line = line.replace("<player_kills>", UHC.getInstance().playerManager.getPlayersKills(player) + "");
+                line = line.replace("<player_kills>",
+                        UHC.getInstance().playerManager.getPlayersKills(player.getUniqueId()) + "");
             }
             if (line.toLowerCase().contains("<players_left>")) {
                 this.players_left = line_id;
@@ -51,8 +51,7 @@ public class UHCBoard extends ScoreboardSign {
             if (line.toLowerCase().contains("<team_kills>")) {
                 this.team_kills = line_id;
                 this.team_kills_line = line;
-                Team team = UHC.getInstance().teamManager.findPlayersTeam(player.getUniqueId());
-                line = line.replace("<team_kills>", (team == null ? 0 : team.team_kills) + "");
+                line = line.replace("<team_kills>", UHC.getInstance().playerManager.getTeamsLeft() + "");
             }
             if (line.toLowerCase().contains("<teams_left>")) {
                 this.team_left = line_id;
@@ -71,4 +70,5 @@ public class UHCBoard extends ScoreboardSign {
         // ram. Add the scoreboardSign to the scoreboardManager
         UHC.getInstance().scoreboardManager.scoreboardMap.put(player.getUniqueId(), this);
     }
+
 }

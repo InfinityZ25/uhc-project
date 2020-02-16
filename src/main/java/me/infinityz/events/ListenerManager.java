@@ -12,7 +12,7 @@ import me.infinityz.events.listeners.LobbyListeners;
  */
 public class ListenerManager {
     UHC instance;
-    Listener globalListener, lobbyListener;
+    public Listener globalListener, lobbyListener, ingameListener;
 
     public ListenerManager(UHC instance) {
         this.instance = instance;

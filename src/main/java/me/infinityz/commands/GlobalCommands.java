@@ -78,15 +78,6 @@ public class GlobalCommands implements CommandExecutor {
                 player.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
                 break;
             }
-            case "scen": {
-                instance.scoreboardManager.scenariosSet.add(args[1]);
-                break;
-            }
-            case "scenrm": {
-
-                instance.scoreboardManager.scenariosSet.remove(args[1]);
-                break;
-            }
             case "start": {
                 if (GameStage.stage != GameStage.LOBBY) {
                     sender.sendMessage("You can't start the game when gamestage is " + GameStage.stage.toString());

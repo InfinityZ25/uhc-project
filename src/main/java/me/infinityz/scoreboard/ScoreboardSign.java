@@ -124,6 +124,37 @@ public class ScoreboardSign {
         created = false;
     }
 
+    public String formatTime(int seconds) {
+        int hours = seconds / 3600;
+        int minutes = (seconds - hours * 3600) / 60;
+        int second = (seconds - hours * 3600) - minutes * 60;
+
+        String formattedTime = "";
+        if (hours > 0) {
+            if (hours < 10)
+                formattedTime += "0";
+            formattedTime += hours + ":";
+
+            if (minutes < 10)
+                formattedTime += "0";
+            formattedTime += minutes + ":";
+
+            if (second < 10)
+                formattedTime += "0";
+            formattedTime += second;
+        } else {
+            if (minutes < 10)
+                formattedTime += "0";
+            formattedTime += minutes + ":";
+
+            if (second < 10)
+                formattedTime += "0";
+            formattedTime += second;
+        }
+
+        return formattedTime;
+    }
+
     /*
      * Use this method to send a future that has to be eventually updated by a
      * data-watcher for the global scoreboards.
