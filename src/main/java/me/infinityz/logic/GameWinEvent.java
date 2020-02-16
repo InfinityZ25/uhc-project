@@ -11,8 +11,9 @@ import me.infinityz.player.UHCPlayer;
 public class GameWinEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     public UHCPlayer uhcPlayer;
+    public WinType winType;
 
-    public GameWinEvent(UHCPlayer e) {
+    public GameWinEvent(UHCPlayer e, WinType winType) {
         this.uhcPlayer = e;
     }
 
@@ -22,6 +23,10 @@ public class GameWinEvent extends Event {
 
     public static HandlerList getHandlerList() {
         return handlers;
+    }
+
+    public enum WinType {
+        TEAMS, SOLO;
     }
 
 }

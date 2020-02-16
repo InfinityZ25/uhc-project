@@ -195,8 +195,9 @@ public class TeamListener implements Listener {
         Bukkit.broadcastMessage("Calcuating scatter locations...");
         Bukkit.getOnlinePlayers().forEach(player -> {
             if (UHC.getInstance().teamManager.team_enabled) {
+                Team player_team = UHC.getInstance().teamManager.findPlayersTeam(player.getUniqueId());
                 new UHCPlayer(player.getUniqueId(),
-                        UHC.getInstance().teamManager.findPlayersTeam(player.getUniqueId()));
+                        (player_team != null ? player_team : UHC.getInstance().teamManager.createTeam(player)));
             } else {
                 new UHCPlayer(player.getUniqueId());
             }
