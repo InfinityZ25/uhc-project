@@ -180,14 +180,18 @@ public abstract class TinyProtocol {
 
             @EventHandler(priority = EventPriority.LOWEST)
             public final void onPlayerLogin(PlayerLoginEvent e) {
-                if (closed)
-                    return;
+                try {
+                    if (closed)
+                        return;
 
-                Channel channel = getChannel(e.getPlayer());
+                    Channel channel = getChannel(e.getPlayer());
 
-                // Don't inject players that have been explicitly uninjected
-                if (!uninjectedChannels.contains(channel)) {
-                    injectPlayer(e.getPlayer());
+                    // Don't inject players that have been explicitly uninjected
+                    if (!uninjectedChannels.contains(channel)) {
+                        injectPlayer(e.getPlayer());
+                    }
+
+                } catch (Exception x) {
                 }
             }
 

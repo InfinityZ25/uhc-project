@@ -28,6 +28,7 @@ public class CombatLoggerEntity extends EntitySkeleton {
         super(((CraftWorld) world).getHandle());
         this.player_Uuid = player.getUniqueId();
         this.playerInventory = player.getInventory();
+        this.setHealth((float) player.getHealth());
         ((CraftLivingEntity) this.getBukkitEntity()).setRemoveWhenFarAway(false);
         UHC.getInstance().combatLoggerManager.inventory_map.put(this.getId(), this.playerInventory);
         UHCPlayer uhc = UHC.getInstance().playerManager.getUHCPlayerFromID(player.getUniqueId());

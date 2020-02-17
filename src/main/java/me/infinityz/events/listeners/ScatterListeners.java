@@ -2,6 +2,8 @@ package me.infinityz.events.listeners;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -30,6 +32,16 @@ public class ScatterListeners extends SkeletonListener {
 
     @EventHandler
     public void onDamage(PlayerInteractAtEntityEvent e) {
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlock(BlockPlaceEvent e) {
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlock(BlockBreakEvent e) {
         e.setCancelled(true);
     }
 

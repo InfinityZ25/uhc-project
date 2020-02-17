@@ -1,6 +1,10 @@
 package me.infinityz.events.listeners;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftSkeleton;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -8,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 
 import me.infinityz.UHC;
 import me.infinityz.combatlogger.CombatLoggerEntity;
@@ -73,6 +78,7 @@ public class IngameListeners extends SkeletonListener {
                 });
             }
         }
+        // TODO: Change this to keep players hidden.
 
         Bukkit.getScheduler().runTaskAsynchronously(UHC.getInstance(), () -> {
             Bukkit.getOnlinePlayers().stream().filter(it -> player != it).forEach(it -> {
@@ -117,6 +123,9 @@ public class IngameListeners extends SkeletonListener {
         }
     }
 
+    // TODO: MOVE
+    List<Chunk> keepLoaded = new ArrayList<>();
+
     @EventHandler
     public void onUHCDisconnect(UHCPlayerDisconnectEvent e) {
         if (!e.uhcPlayer.alive) {
@@ -127,14 +136,24 @@ public class IngameListeners extends SkeletonListener {
             // connected to get him dq'd as soon as pvp is on!
             return;
         }
+        keepLoaded.add(e.playerQuitEvent.getPlayer().getLocation().getChunk());
         Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
             e.playerQuitEvent.getPlayer().getWorld().loadChunk(e.playerQuitEvent.getPlayer().getLocation().getChunk());
             EntityTypes.spawnEntity(
                     new CombatLoggerEntity(e.playerQuitEvent.getPlayer().getWorld(), e.playerQuitEvent.getPlayer()),
                     e.playerQuitEvent.getPlayer().getLocation());
+            keepLoaded.remove(e.playerQuitEvent.getPlayer().getLocation().getChunk());
 
         });
 
+    }
+
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent e) {
+        if (keepLoaded.contains(e.getChunk())) {
+            e.getChunk().load();
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -169,9 +188,9 @@ public class IngameListeners extends SkeletonListener {
                 ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(all.getUniqueId());
                 if (sb != null && sb instanceof UHCBoard) {
                     UHCBoard board = (UHCBoard) sb;
-                    board.queueUpdate(board.players_left, board.players_left_line.replace("<players_left>", i + ""));
+                    board.updatePlayersLeft(i);
                     if (instance.teamManager.team_enabled) {
-                        board.queueUpdate(board.team_left, board.team_left_line.replace("<teams_left>", x + ""));
+                        board.updateTeamsLeft(x);
                     }
                 }
             });
@@ -190,8 +209,7 @@ public class IngameListeners extends SkeletonListener {
                             ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(all);
                             if (sb != null && sb instanceof UHCBoard) {
                                 UHCBoard board = (UHCBoard) sb;
-                                board.queueUpdate(board.team_kills,
-                                        board.team_kills_line.replace("<team_kills>", team.team_kills + ""));
+                                board.updateTeamKills(team.team_kills);
                             }
 
                         });
@@ -200,8 +218,7 @@ public class IngameListeners extends SkeletonListener {
                 ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(killer.getUniqueId());
                 if (sb != null && sb instanceof UHCBoard) {
                     UHCBoard board = (UHCBoard) sb;
-                    board.queueUpdate(board.player_kills,
-                            board.player_kills_line.replace("<player_kills>", killer_UHC.game_kills + ""));
+                    board.updatePlayerKills(killer_UHC.game_kills);
                 }
             }
 

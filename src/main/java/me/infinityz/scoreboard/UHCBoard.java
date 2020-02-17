@@ -71,4 +71,36 @@ public class UHCBoard extends ScoreboardSign {
         UHC.getInstance().scoreboardManager.scoreboardMap.put(player.getUniqueId(), this);
     }
 
+    public void updatePlayerKills(int new_kills) {
+        super.queueUpdate(player_kills, player_kills_line.replace("<player_kills>", new_kills + ""));
+    }
+
+    public void updateTeamKills(int new_team_kills) {
+        super.queueUpdate(team_kills, team_kills_line.replace("<team_kills>", team_kills + ""));
+    }
+
+    public void updatePlayersLeft(int new_players_left) {
+        super.queueUpdate(players_left, players_left_line.replace("<players_left>", new_players_left + ""));
+    }
+
+    public void updateTeamsLeft(int new_teams_left) {
+        super.queueUpdate(team_left, team_left_line.replace("<teams_left>", new_teams_left + ""));
+    }
+
+    public void updateTimer(int new_timer_seconds, boolean force) {
+        if (force) {
+            super.forceUpdate(timer, timer_line.replace("<timer>", formatTime(new_timer_seconds)));
+            return;
+        }
+        super.queueUpdate(timer, timer_line.replace("<timer>", formatTime(new_timer_seconds)));
+    }
+
+    public void updateBorder(String new_border, boolean force) {
+        if (force) {
+            super.forceUpdate(timer, timer_line.replace("<border>", new_border));
+            return;
+        }
+        super.queueUpdate(timer, timer_line.replace("<border>", new_border));
+    }
+
 }

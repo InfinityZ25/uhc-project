@@ -1,7 +1,9 @@
 package me.infinityz.teams.listener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Difficulty;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,7 +24,6 @@ import me.infinityz.logic.ScatterLocationsFoundEvent;
 import me.infinityz.logic.ScatterTeleportCompletedEvent;
 import me.infinityz.player.UHCPlayer;
 import me.infinityz.player.UHCPlayerDeathEvent;
-import me.infinityz.scatter.Scatter;
 import me.infinityz.scatter.Teleport;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
@@ -199,8 +200,7 @@ public class TeamListener implements Listener {
 
     @EventHandler
     public void onPreGame(PreGameStartEvent e) {
-        new Scatter(Bukkit.getWorld("UHC"), UHC.getInstance().gameConfigManager.gameConfig.map_size, 100,
-                Bukkit.getOnlinePlayers().size() + 5, 50).runTaskTimer(UHC.getInstance(), 0, 5L);
+        Bukkit.getPluginManager().callEvent(new ScatterLocationsFoundEvent(UHC.getInstance().locations));
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
                 "&cThe UHC is starting!\n&cIf you have any doubts, please join our TS3: &fts.arcadens.net"));
         Bukkit.getOnlinePlayers().forEach(player -> {
@@ -220,7 +220,16 @@ public class TeamListener implements Listener {
 
     @EventHandler
     public void onLocationsFound(ScatterLocationsFoundEvent e) {
-        new Teleport(UHC.getInstance(), e.getLocations(), 100).runTaskTimer(UHC.getInstance(), 0, 10);
+        Bukkit.broadcastMessage("Scatter loactions have been found!");
+        new Teleport(UHC.getInstance(), UHC.getInstance().locations, 400).runTaskTimer(UHC.getInstance(), 10, 20 * 2);
+        World w = Bukkit.getWorld("UHC");
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                "wb set UHC " + UHC.getInstance().gameConfigManager.gameConfig.map_size + " "
+                        + UHC.getInstance().gameConfigManager.gameConfig.map_size + " 0 0");
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "wb set UHC_nether 1000 1000 0 0 ");
+        w.setDifficulty(Difficulty.PEACEFUL);
+        w.setTime(1000);
+
         GameStage.stage = GameStage.SCATTERING;
 
     }
@@ -248,6 +257,12 @@ public class TeamListener implements Listener {
                 player.setHealth(20.0D);
                 player.setFoodLevel(20);
                 player.setSaturation(20.0F);
+                UHC.getInstance().unsit(player);
+                Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
+
+                    player.setAllowFlight(false);
+                    player.setFlying(false);
+                });
             });
 
             Bukkit.getPluginManager().callEvent(new GameStartedEvent());
@@ -263,15 +278,22 @@ public class TeamListener implements Listener {
     @EventHandler
     public void gameStartedEvent(GameStartedEvent e) {
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "\n&4Game has begun, Good luck!"));
+        Bukkit.getWorld("UHC").setDifficulty(Difficulty.NORMAL);
+        UHC.getInstance().locations.clear();
+        UHC.getInstance().sitted = null;
         UHC.getInstance().gameLogicManager.gameLogicTask.runTaskTimerAsynchronously(UHC.getInstance(), 20, 20);
     }
 
     @EventHandler
     public void playerScattered(PlayerScatteredEvent e) {
         e.player.sendMessage(ChatColor.translateAlternateColorCodes('&', "\n&7You've been scattered!"));
-        /*
-         * e.player.setAllowFlight(true); e.player.setFlying(true);
-         */
+        UHC.getInstance().sit(e.player);
+        e.player.setExp(0.0F);
+        e.player.setLevel(0);
+
+        e.player.setAllowFlight(true);
+        e.player.setFlying(true);
+
     }
 
     @EventHandler

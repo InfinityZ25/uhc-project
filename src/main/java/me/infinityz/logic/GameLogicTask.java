@@ -27,8 +27,7 @@ public class GameLogicTask extends BukkitRunnable {
             ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(player.getUniqueId());
             if (sb != null && sb instanceof UHCBoard) {
                 UHCBoard board = (UHCBoard) sb;
-                board.queueUpdate(board.timer,
-                        board.timer_line.replace("<timer>", board.formatTime(gameLogicManager.game_time)));
+                board.updateTimer(gameLogicManager.game_time, false);
             }
         });
         checkForGameEvent(gameLogicManager.game_time);

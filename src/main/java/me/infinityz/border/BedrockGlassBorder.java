@@ -42,10 +42,15 @@ public class BedrockGlassBorder extends BukkitRunnable {
 
                 if (map.containsKey(player.getUniqueId())) {
                     List<Vector> vList = new ArrayList<>(map.get(player.getUniqueId()));
-                    vList.forEach(vector -> {
+                    vList.parallelStream().forEach(vector -> {
                         if (collection.contains(vector))
                             return;
-                        player.sendBlockChange(vector.toLocation(player.getWorld()), Material.AIR, (byte) 0);
+                        int block_id = vector.toLocation(player.getWorld()).getWorld()
+                                .getBlockTypeIdAt(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+                        if (block_id != 0) {
+                            player.sendBlockChange(vector.toLocation(player.getWorld()), Material.AIR, (byte) 0);
+                        }
+
                     });
                     vList = null;
                 }
@@ -56,8 +61,13 @@ public class BedrockGlassBorder extends BukkitRunnable {
             }
             if (map.containsKey(player.getUniqueId())) {
                 List<Vector> vectors = new ArrayList<>(map.get(player.getUniqueId()));
-                vectors.forEach(
-                        vector -> player.sendBlockChange(vector.toLocation(player.getWorld()), Material.AIR, (byte) 0));
+                vectors.forEach(vector -> {
+                    int block_id = vector.toLocation(player.getWorld()).getWorld().getBlockTypeIdAt(vector.getBlockX(),
+                            vector.getBlockY(), vector.getBlockZ());
+                    if (block_id != 0) {
+                        player.sendBlockChange(vector.toLocation(player.getWorld()), Material.AIR, (byte) 0);
+                    }
+                });
                 vectors = null;
                 map.remove(player.getUniqueId());
             }

@@ -5,6 +5,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.infinityz.UHC;
+import me.infinityz.scoreboard.ScoreboardSign;
+import me.infinityz.scoreboard.UHCBoard;
 
 /**
  * BorderShrinkTask
@@ -28,6 +30,16 @@ public class BorderShrinkTask extends BukkitRunnable {
         Bukkit.broadcastMessage(
                 ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
                         + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " minutes!"));
+
+        Bukkit.getOnlinePlayers().parallelStream().forEach(all -> {
+            ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
+            String update_str = ChatColor.translateAlternateColorCodes('&',
+                    UHC.getInstance().gameConfigManager.gameConfig.map_size + " &8(&a" + t + "m&8)");
+            if (sb != null && sb instanceof UHCBoard) {
+                UHCBoard board = (UHCBoard) sb;
+                board.updateBorder(update_str, false);
+            }
+        });
         t--;
     }
 

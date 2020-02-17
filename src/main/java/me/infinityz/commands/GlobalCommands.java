@@ -25,6 +25,7 @@ import me.infinityz.border.BedrockBorderTask;
 import me.infinityz.logic.PreGameStartEvent;
 import me.infinityz.player.UHCPlayer;
 import me.infinityz.protocol.Reflection;
+import me.infinityz.scatter.Scatter;
 import me.infinityz.scenarios.IScenario;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
@@ -34,6 +35,8 @@ import net.md_5.bungee.api.ChatColor;
 /**
  * GlobalCommands
  */
+
+@SuppressWarnings("all")
 public class GlobalCommands implements CommandExecutor {
 
     private final UHC instance;
@@ -66,6 +69,22 @@ public class GlobalCommands implements CommandExecutor {
                 borderTask.runTaskTimer(instance, 0, Integer.parseInt(args[4]));
                 break;
             }
+            case "bedrock": {
+                if (args.length < 3) {
+                    sender.sendMessage("Usage: /uhc bedrock <world> <size> <height>");
+                    return true;
+                }
+                final BedrockBorderTask borderTask = new BedrockBorderTask(Bukkit.getWorld(args[1]),
+                        Integer.parseInt(args[2]), Integer.parseInt(args[3]), 200);
+                borderTask.runTaskTimer(instance, 0, 20 * 2);
+
+                break;
+            }
+            case "find": {
+                new Scatter(Bukkit.getWorld("UHC"), UHC.getInstance().gameConfigManager.gameConfig.map_size, 100,
+                        Integer.parseInt(args[1]), 150).runTaskTimer(UHC.getInstance(), 40L, 20L);
+                break;
+            }
             case "scatter": {
                 break;
             }
@@ -84,6 +103,11 @@ public class GlobalCommands implements CommandExecutor {
             case "start": {
                 if (GameStage.stage != GameStage.LOBBY) {
                     sender.sendMessage("You can't start the game when gamestage is " + GameStage.stage.toString());
+                    return true;
+                }
+                if (instance.locations == null || instance.locations.isEmpty()) {
+                    sender.sendMessage("You can't start the game with no locations loaded!");
+
                     return true;
                 }
                 if (instance.practiceManager.enabled) {
@@ -195,11 +219,15 @@ public class GlobalCommands implements CommandExecutor {
                         Bukkit.broadcastMessage("[UHC] " + offlinePlayer.getName() + " has been respawned!");
                         // Update player's scoreboard
                         final int new_aliv = UHC.getInstance().playerManager.getAlivePlayers();
+                        final int new_team = UHC.getInstance().playerManager.getTeamsLeft();
+                        final boolean team = UHC.getInstance().teamManager.team_enabled;
                         UHC.getInstance().scoreboardManager.scoreboardMap.values().forEach(sb -> {
                             if (sb instanceof UHCBoard) {
                                 final UHCBoard uhcb = (UHCBoard) sb;
-                                uhcb.queueUpdate(uhcb.players_left,
-                                        uhcb.players_left_line.replace("<players_left>", new_aliv + ""));
+                                uhcb.updatePlayersLeft(new_aliv);
+                                if (team) {
+                                    uhcb.updateTeamsLeft(new_team);
+                                }
                             }
                         });
                         if (offlinePlayer.isOnline()) {
@@ -314,8 +342,7 @@ public class GlobalCommands implements CommandExecutor {
                     UHC.getInstance().scoreboardManager.scoreboardMap.values().forEach(sb -> {
                         if (sb instanceof UHCBoard) {
                             final UHCBoard uhcb = (UHCBoard) sb;
-                            uhcb.queueUpdate(uhcb.players_left,
-                                    uhcb.players_left_line.replace("<players_left>", new_aliv + ""));
+                            uhcb.updatePlayersLeft(new_aliv);
                         }
                     });
                     if (offlinePlayer.isOnline()) {
@@ -357,11 +384,15 @@ public class GlobalCommands implements CommandExecutor {
                     instance.whitelistManager.whitelist.remove(uhc.uuid);
                     Bukkit.broadcastMessage("[UHC] " + of.getName() + " has been dq'd!");
                     final int new_aliv = UHC.getInstance().playerManager.getAlivePlayers();
+                    final boolean isteam = UHC.getInstance().teamManager.team_enabled;
+                    final int teams_left = UHC.getInstance().playerManager.getTeamsLeft();
                     UHC.getInstance().scoreboardManager.scoreboardMap.values().forEach(sb -> {
                         if (sb instanceof UHCBoard) {
                             final UHCBoard uhcb = (UHCBoard) sb;
-                            uhcb.queueUpdate(uhcb.players_left,
-                                    uhcb.players_left_line.replace("<players_left>", new_aliv + ""));
+                            uhcb.updatePlayersLeft(new_aliv);
+                            if (isteam) {
+                                uhcb.updateTeamsLeft(teams_left);
+                            }
                         }
                     });
 

@@ -28,7 +28,7 @@ public class GameConfig {
         this.ender_pearl_damage = false;
         this.poison_1 = true;
         this.poison_2 = false;
-        this.absorption = false;
+        this.absorption = true;
         this.goldenheads = true;
         this.headpost = true;
         this.godapples = false;

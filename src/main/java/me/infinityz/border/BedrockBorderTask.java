@@ -23,10 +23,10 @@ public class BedrockBorderTask extends BukkitRunnable {
         this.world = world;
         this.size = size;
         this.height = height;
-        this.northInt = 1;
-        this.southInt = 0;
-        this.westInt = 0;
-        this.eastInt = 0;
+        this.northInt = 0;
+        this.southInt = 1;
+        this.westInt = 1;
+        this.eastInt = 1;
         this.maxtick = maxtick;
         this.start = System.currentTimeMillis();
     }
@@ -63,8 +63,6 @@ public class BedrockBorderTask extends BukkitRunnable {
         Bukkit.broadcastMessage("It took " + (end - start) + "ms!");
     }
 
-    // TO-DO: Consider reducing the complexity to two for loops. One north-east, and
-    // one south-west. It would considerably reduce the time it takes to execute
     @Override
     public void run() {
         // Set Milliseconds to current time to keep track of lag
@@ -83,8 +81,9 @@ public class BedrockBorderTask extends BukkitRunnable {
             if (northInt > (size * 2)) {
                 north = true;
                 Bukkit.broadcastMessage("out");
+            } else {
+                return;
             }
-            return;
         }
         if (!south) {
             for (; southInt <= size * 2; southInt++) {
@@ -99,40 +98,46 @@ public class BedrockBorderTask extends BukkitRunnable {
             if (southInt > (size * 2)) {
                 south = true;
                 Bukkit.broadcastMessage("out2");
+            } else {
+                return;
             }
-            return;
         }
         if (!west) {
-            for (; westInt <= (size * 2) + 1; westInt++) {
+            for (; westInt <= size * 2; westInt++) {
                 if (milliseconds + maxtick <= System.currentTimeMillis()) {
                     break;
                 }
-                for (int j = world.getHighestBlockYAt(size - westInt, -size - westInt) + height; j > 0; j--) {
-                    world.getBlockAt(size - westInt, j, -size - 1).setType(Material.BEDROCK);
+                for (int j = world.getHighestBlockYAt(size - westInt, -size) + height; j > 0; j--) {
+                    world.getBlockAt(size - westInt, j, -size).setType(Material.BEDROCK);
                 }
             }
 
-            if (westInt > (size * 2) + 1) {
+            if (westInt > (size * 2)) {
                 west = true;
                 Bukkit.broadcastMessage("out3");
+            } else {
+                return;
             }
-            return;
         }
         if (!east) {
             for (; eastInt <= size * 2; eastInt++) {
                 if (milliseconds + maxtick <= System.currentTimeMillis()) {
                     break;
                 }
-                for (int j = world.getHighestBlockYAt(-size - 1, size - eastInt) + height; j > 0; j--) {
-                    world.getBlockAt(-size - 1, j, size - eastInt).setType(Material.BEDROCK);
+                if (eastInt == size * 2) {
+                    continue;
+                }
+                for (int j = world.getHighestBlockYAt(-size, eastInt - size) + height; j > 0; j--) {
+                    world.getBlockAt(-size, j, eastInt - size).setType(Material.BEDROCK);
                 }
             }
 
             if (eastInt > (size * 2)) {
                 east = true;
                 Bukkit.broadcastMessage("out4");
+            } else {
+                return;
             }
-            return;
         }
         Bukkit.broadcastMessage(
                 "It took " + (System.currentTimeMillis() - start) + "ms to build a " + size + "x" + size + " border!");

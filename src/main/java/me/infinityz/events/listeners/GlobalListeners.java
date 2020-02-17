@@ -2,9 +2,13 @@ package me.infinityz.events.listeners;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,6 +22,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -41,10 +46,22 @@ import me.infinityz.scenarios.events.ScenarioEnabledEvent;
  * GlobalListeners
  */
 public class GlobalListeners extends SkeletonListener {
+    public Map<UUID, Long> time;
+    public int chat_delay_ms;
 
     public GlobalListeners(final UHC instance) {
         super(instance);
+        time = new HashMap<>();
+        chat_delay_ms = 3000;
         new BedrockGlassBorder(instance).runTaskTimerAsynchronously(instance, 0, 5);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(instance, () -> {
+            new HashMap<>(time).forEach((uuid, l) -> {
+                if (l + chat_delay_ms <= System.currentTimeMillis()) {
+                    time.remove(uuid);
+                }
+            });
+
+        }, 40L, 5);
     }
 
     @EventHandler
@@ -61,12 +78,32 @@ public class GlobalListeners extends SkeletonListener {
     }
 
     @EventHandler
+    public void onCommandPreProcess(PlayerCommandPreprocessEvent e) {
+        if (e.getPlayer().hasPermission("uhc.override"))
+            return;
+        if (e.getMessage().startsWith("/me") || e.getMessage().startsWith("/bukkit")
+                || e.getMessage().startsWith("/bukkit") || e.getMessage().startsWith("/minecraft")) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         if (!instance.gameConfigManager.gameConfig.chat) {
             if (!e.getPlayer().hasPermission("uhc.chat")) {
                 e.setCancelled(true);
+                return;
             }
         }
+        final Long t = time.get(e.getPlayer().getUniqueId());
+        if (t != null) {
+            double rounded_time = Math.round(((System.currentTimeMillis() - t - chat_delay_ms) / 1000D) * 10) / 10.0;
+            e.getPlayer().sendMessage(
+                    ChatColor.RED + "You have to wait at least " + Math.abs(rounded_time) + "s to talk again");
+            e.setCancelled(true);
+        }
+        time.putIfAbsent(e.getPlayer().getUniqueId(), System.currentTimeMillis());
+
     }
 
     @EventHandler

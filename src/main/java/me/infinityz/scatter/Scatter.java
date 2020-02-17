@@ -9,7 +9,7 @@ import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import me.infinityz.logic.ScatterLocationsFoundEvent;
+import me.infinityz.UHC;
 
 /**
  * Scatter
@@ -50,8 +50,8 @@ public class Scatter extends BukkitRunnable {
             }
             return;
         }
-        // Pass it down to a different task
-        Bukkit.getPluginManager().callEvent(new ScatterLocationsFoundEvent(locations));
+        Bukkit.broadcastMessage("Scatter done");
+        UHC.getInstance().locations = locations;
         this.cancel();
 
     }

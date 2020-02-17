@@ -29,16 +29,17 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
                     "&6[WorldBorder] The world was shrunk to &f" + to_shrink_size + "x" + to_shrink_size + "!"));
             new BedrockBorderTask(Bukkit.getWorld("UHC"), to_shrink_size, 6, 50).runTaskTimer(UHC.getInstance(), 0, 5);
             UHC.getInstance().gameConfigManager.gameConfig.map_size = to_shrink_size;
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                    "wb UHC set " + to_shrink_size + " " + to_shrink_size + " 0 0");
-            Bukkit.getOnlinePlayers().forEach(all -> {
+            Bukkit.getOnlinePlayers().parallelStream().forEach(all -> {
                 ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
                 ;
                 if (sb != null && sb instanceof UHCBoard) {
                     UHCBoard board = (UHCBoard) sb;
-                    board.queueUpdate(board.border, board.border_line.replace("<border>", to_shrink_size + ""));
-
+                    board.updateBorder(to_shrink_size + "", false);
                 }
+            });
+            Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                        "wb UHC set " + to_shrink_size + " " + to_shrink_size + " 0 0");
             });
 
             switch (to_shrink_size) {
@@ -92,12 +93,30 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
             Bukkit.broadcastMessage(
                     ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
                             + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " seconds!"));
+            String update_str = ChatColor.translateAlternateColorCodes('&',
+                    UHC.getInstance().gameConfigManager.gameConfig.map_size + " &8(&a" + t + "s&8)");
+            Bukkit.getOnlinePlayers().parallelStream().forEach(all -> {
+                ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
+                if (sb != null && sb instanceof UHCBoard) {
+                    UHCBoard board = (UHCBoard) sb;
+                    board.updateBorder(update_str, false);
+                }
+            });
             break;
         }
         case 1: {
             Bukkit.broadcastMessage(
                     ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
                             + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " second!"));
+            String update_str = ChatColor.translateAlternateColorCodes('&',
+                    UHC.getInstance().gameConfigManager.gameConfig.map_size + " &8(&a" + t + "s&8)");
+            Bukkit.getOnlinePlayers().parallelStream().forEach(all -> {
+                ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
+                if (sb != null && sb instanceof UHCBoard) {
+                    UHCBoard board = (UHCBoard) sb;
+                    board.updateBorder(update_str, false);
+                }
+            });
             break;
         }
         }
