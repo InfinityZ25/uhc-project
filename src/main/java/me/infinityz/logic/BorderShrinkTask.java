@@ -1,6 +1,7 @@
 package me.infinityz.logic;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.infinityz.UHC;
@@ -24,8 +25,9 @@ public class BorderShrinkTask extends BukkitRunnable {
             new BorderShrinkTaskSeconds(to_shrink_size).runTaskTimerAsynchronously(UHC.getInstance(), 0, 20);
             return;
         }
-        Bukkit.broadcastMessage("[WorldBorder] The world will shrink to " + to_shrink_size + "x" + to_shrink_size
-                + " in " + t + " minutes!");
+        Bukkit.broadcastMessage(
+                ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
+                        + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " minutes!"));
         t--;
     }
 

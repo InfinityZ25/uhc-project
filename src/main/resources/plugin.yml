@@ -16,3 +16,10 @@ commands:
   practice:
     aliases: [arena, a, p]
     usage: "\u00A7cCorrect usage: /practice <value> <data>"
+  fix:
+  kt:
+  heal:
+  feed:
+  respawn:
+  dq:
+  findoff:

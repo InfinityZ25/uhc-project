@@ -7,6 +7,7 @@ import me.infinityz.UHC;
 import me.infinityz.border.BedrockBorderTask;
 import me.infinityz.scoreboard.ScoreboardSign;
 import me.infinityz.scoreboard.UHCBoard;
+import net.md_5.bungee.api.ChatColor;
 
 /**
  * BorderShrinkTask
@@ -24,8 +25,8 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
     public void run() {
         if (t == 0) {
             this.cancel();
-            Bukkit.broadcastMessage(
-                    "[WorldBorder] The world was shrunk to " + to_shrink_size + "x" + to_shrink_size + "!");
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                    "&6[WorldBorder] The world was shrunk to &f" + to_shrink_size + "x" + to_shrink_size + "!"));
             new BedrockBorderTask(Bukkit.getWorld("UHC"), to_shrink_size, 6, 50).runTaskTimer(UHC.getInstance(), 0, 5);
             UHC.getInstance().gameConfigManager.gameConfig.map_size = to_shrink_size;
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
@@ -72,7 +73,8 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
                 break;
             }
             case 10: {
-                Bukkit.broadcastMessage("[WorldBorder] The world has shrunk to its final size!");
+                Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&7[WorldBorder] The world has shrunk to its final size!"));
                 break;
             }
             }
@@ -87,13 +89,15 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
         case 4:
         case 3:
         case 2: {
-            Bukkit.broadcastMessage("[WorldBorder] The world will shrink to " + to_shrink_size + "x" + to_shrink_size
-                    + " in " + t + " seconds!");
+            Bukkit.broadcastMessage(
+                    ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
+                            + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " seconds!"));
             break;
         }
         case 1: {
-            Bukkit.broadcastMessage("[WorldBorder] The world will shrink to " + to_shrink_size + "x" + to_shrink_size
-                    + " in " + t + " second!");
+            Bukkit.broadcastMessage(
+                    ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
+                            + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " second!"));
             break;
         }
         }

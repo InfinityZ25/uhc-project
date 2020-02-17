@@ -64,7 +64,7 @@ public class GameConfigListener implements Listener {
             if (gameConfigManager.gameConfig.apple_rate < 0)
                 return;
             if (Math.random() <= (gameConfigManager.gameConfig.apple_rate)) {
-                e.getBlock().setType(Material.GLASS);
+                e.getBlock().setType(Material.AIR);
                 e.getBlock().breakNaturally();
                 dropCenter(new ItemStack(Material.APPLE, 1 + fortune_bonus(player)), e.getBlock().getLocation());
             }
@@ -75,7 +75,7 @@ public class GameConfigListener implements Listener {
             if (gameConfigManager.gameConfig.flint_rate < 0)
                 return;
             if (Math.random() <= (gameConfigManager.gameConfig.flint_rate)) {
-                e.getBlock().setType(Material.GLASS);
+                e.getBlock().setType(Material.AIR);
                 e.getBlock().breakNaturally();
                 dropCenter(new ItemStack(Material.FLINT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
             }

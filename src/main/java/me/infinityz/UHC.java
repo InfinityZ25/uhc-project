@@ -8,7 +8,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.infinityz.combatlogger.CombatLoggerManager;
-import me.infinityz.combatlogger.SkeletonCombatLogger;
 import me.infinityz.commands.CommandManager;
 import me.infinityz.configuration.GameConfigManager;
 import me.infinityz.events.ListenerManager;
@@ -34,7 +33,6 @@ public class UHC extends JavaPlugin implements Listener {
     public PracticeManager practiceManager;
     public CombatLoggerManager combatLoggerManager;
     public WorldManager worldManager;
-    public SkeletonCombatLogger skeleton;
     public ProtocolManager protocolManager;
     public WhitelistManager whitelistManager;
     public TeamManager teamManager;
@@ -65,6 +63,7 @@ public class UHC extends JavaPlugin implements Listener {
         this.gameLogicManager = new GameLogicManager(this);
         this.combatLoggerManager = new CombatLoggerManager(this);
         GameStage.stage = GameStage.LOBBY;
+
     }
 
     @Override

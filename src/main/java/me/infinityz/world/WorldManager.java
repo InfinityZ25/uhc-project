@@ -1,6 +1,7 @@
 package me.infinityz.world;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
@@ -17,6 +18,8 @@ public class WorldManager {
     public WorldManager(UHC instance) {
         this.instance = instance;
         this.createWorld("UHC", Environment.NORMAL, true);
+        Bukkit.getWorld("Lobby").setGameRuleValue("doMobSpawning", "false");
+        Bukkit.getWorld("Lobby").setDifficulty(Difficulty.PEACEFUL);
         this.checkMainWorlds();
     }
 

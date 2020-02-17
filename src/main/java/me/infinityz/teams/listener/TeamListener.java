@@ -1,14 +1,19 @@
 package me.infinityz.teams.listener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
 
 import me.infinityz.UHC;
 import me.infinityz.UHC.GameStage;
 import me.infinityz.events.listeners.IngameListeners;
+import me.infinityz.events.listeners.ScatterListeners;
 import me.infinityz.logic.GameStartEvent;
 import me.infinityz.logic.GameStartedEvent;
 import me.infinityz.logic.PlayerScatteredEvent;
@@ -16,6 +21,7 @@ import me.infinityz.logic.PreGameStartEvent;
 import me.infinityz.logic.ScatterLocationsFoundEvent;
 import me.infinityz.logic.ScatterTeleportCompletedEvent;
 import me.infinityz.player.UHCPlayer;
+import me.infinityz.player.UHCPlayerDeathEvent;
 import me.infinityz.scatter.Scatter;
 import me.infinityz.scatter.Teleport;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
@@ -29,6 +35,7 @@ import me.infinityz.teams.events.TeamKickedEvent;
 import me.infinityz.teams.events.TeamLeftEvent;
 import me.infinityz.teams.events.TeamRemovedEvent;
 import me.infinityz.teams.objects.Team;
+import net.md_5.bungee.api.ChatColor;
 
 /**
  * TeamListener
@@ -163,8 +170,9 @@ public class TeamListener implements Listener {
                     sb.destroy();
                     UHC.getInstance().scoreboardManager.scoreboardMap.remove(all.getUniqueId());
                 }
-                new LobbyBoard(all, "&bArcadens UHC", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>",
-                        "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net ");
+                new LobbyBoard(all, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>",
+                        "&7Players: &f<players>", "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>",
+                        "&b  Arcadens.net ");
 
             });
         });
@@ -181,8 +189,9 @@ public class TeamListener implements Listener {
                     sb.destroy();
                     UHC.getInstance().scoreboardManager.scoreboardMap.remove(all.getUniqueId());
                 }
-                new LobbyBoard(all, "&bArcadens UHC", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>",
-                        "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>", "&b  Arcadens.net ");
+                new LobbyBoard(all, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>",
+                        "&7Players: &f<players>", "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>",
+                        "&b  Arcadens.net ");
 
             });
         });
@@ -192,7 +201,8 @@ public class TeamListener implements Listener {
     public void onPreGame(PreGameStartEvent e) {
         new Scatter(Bukkit.getWorld("UHC"), UHC.getInstance().gameConfigManager.gameConfig.map_size, 100,
                 Bukkit.getOnlinePlayers().size() + 5, 50).runTaskTimer(UHC.getInstance(), 0, 5L);
-        Bukkit.broadcastMessage("Calcuating scatter locations...");
+        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                "&cThe UHC is starting!\n&cIf you have any doubts, please join our TS3: &fts.arcadens.net"));
         Bukkit.getOnlinePlayers().forEach(player -> {
             if (UHC.getInstance().teamManager.team_enabled) {
                 Team player_team = UHC.getInstance().teamManager.findPlayersTeam(player.getUniqueId());
@@ -203,6 +213,7 @@ public class TeamListener implements Listener {
             }
         });
         HandlerList.unregisterAll(UHC.getInstance().listenerManager.lobbyListener);
+        UHC.getInstance().listenerManager.scatterListener = new ScatterListeners(UHC.getInstance());
         // Register events for scatter.
 
     }
@@ -210,14 +221,12 @@ public class TeamListener implements Listener {
     @EventHandler
     public void onLocationsFound(ScatterLocationsFoundEvent e) {
         new Teleport(UHC.getInstance(), e.getLocations(), 100).runTaskTimer(UHC.getInstance(), 0, 10);
-        Bukkit.broadcastMessage("All scatter locations have been found, teleporting!");
+        GameStage.stage = GameStage.SCATTERING;
 
     }
 
     @EventHandler
     public void teleportCompleted(ScatterTeleportCompletedEvent e) {
-        Bukkit.broadcastMessage("Scatter has been completed!");
-
         Bukkit.getPluginManager().callEvent(new GameStartEvent());
     }
 
@@ -225,30 +234,73 @@ public class TeamListener implements Listener {
     public void gameStartEvent(GameStartEvent e) {
         // Maybe write code here to wait till tps are stables to start?
         // Also instantiate the players as UHCPlayers and not spectators here.
-        UHC.getInstance().scoreboardManager.scoreboardMap.forEach((uuid, sb) -> {
-            sb.destroy();
-        });
-        UHC.getInstance().scoreboardManager.scoreboardMap.clear();
-        Bukkit.getOnlinePlayers().parallelStream()
-                .forEach(player -> new UHCBoard(player, "&3Arcadens UHC", "&7Timer: &f<timer>", "<spacer>",
+        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                "\n&7The scatter has succesfully finished, starting in 5 seconds!"));
+        Bukkit.getScheduler().runTaskLaterAsynchronously(UHC.getInstance(), () -> {
+            UHC.getInstance().scoreboardManager.scoreboardMap.forEach((uuid, sb) -> {
+                sb.destroy();
+            });
+            UHC.getInstance().scoreboardManager.scoreboardMap.clear();
+            Bukkit.getOnlinePlayers().parallelStream().forEach(player -> {
+                new UHCBoard(player, " &3Arcadens UHC &7(Test) ", "&7Timer: &f<timer>", "<spacer>",
                         "&7Your kills: &f<player_kills>", "<spacer>", "&7Players Left: &f<players_left>",
-                        "&7Border: &f<border>", "<spacer>", "&3  Arcadens.net "));
+                        "&7Border: &f<border>", "<spacer>", "&3  Arcadens.net ");
+                player.setHealth(20.0D);
+                player.setFoodLevel(20);
+                player.setSaturation(20.0F);
+            });
 
-        Bukkit.getPluginManager().callEvent(new GameStartedEvent());
-        // Register ingameevents
-        UHC.getInstance().listenerManager.ingameListener = new IngameListeners(UHC.getInstance());
-        GameStage.stage = GameStage.IN_GAME;
+            Bukkit.getPluginManager().callEvent(new GameStartedEvent());
+            // Register ingameevents
+            UHC.getInstance().listenerManager.ingameListener = new IngameListeners(UHC.getInstance());
+            // Unregister scattering events
+            HandlerList.unregisterAll(UHC.getInstance().listenerManager.scatterListener);
+            GameStage.stage = GameStage.IN_GAME;
+
+        }, 20 * 5);
     }
 
     @EventHandler
     public void gameStartedEvent(GameStartedEvent e) {
-        Bukkit.broadcastMessage("Game has officially started!");
+        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "\n&4Game has begun, Good luck!"));
         UHC.getInstance().gameLogicManager.gameLogicTask.runTaskTimerAsynchronously(UHC.getInstance(), 20, 20);
     }
 
     @EventHandler
     public void playerScattered(PlayerScatteredEvent e) {
-        e.player.sendMessage("You've been scattered!");
+        e.player.sendMessage(ChatColor.translateAlternateColorCodes('&', "\n&7You've been scattered!"));
+        /*
+         * e.player.setAllowFlight(true); e.player.setFlying(true);
+         */
     }
 
+    @EventHandler
+    public void on(EntityDeathEvent e) {
+        if (e.getEntityType() == EntityType.SKELETON) {
+            int id = e.getEntity().getEntityId();
+            UHCPlayer player = UHC.getInstance().playerManager.findUHCPlayerByCombatLoggerID(id);
+            if (player != null && player.alive) {
+                e.getDrops().clear();
+                // Call for a manual timebomb?
+                Bukkit.broadcastMessage((e.getEntity().getKiller() == null
+                        ? "[CombatLogger] " + Bukkit.getOfflinePlayer(player.uuid).getName() + " has died!"
+                        : "[CombatLogger] " + Bukkit.getOfflinePlayer(player.uuid).getName() + " was killed by "
+                                + e.getEntity().getKiller().getName()));
+                Bukkit.getPluginManager().callEvent(new UHCPlayerDeathEvent(e, player));
+                player.alive = false;
+                for (ItemStack stack : UHC.getInstance().combatLoggerManager.inventory_map.get(id).getContents()) {
+                    if (stack != null && stack.getType() != Material.AIR) {
+                        e.getEntity().getWorld().dropItem(e.getEntity().getLocation(), stack);
+                    }
+                }
+                for (ItemStack stack : UHC.getInstance().combatLoggerManager.inventory_map.get(id).getArmorContents()) {
+                    if (stack != null && stack.getType() != Material.AIR) {
+                        e.getEntity().getWorld().dropItem(e.getEntity().getLocation(), stack);
+                    }
+                }
+                UHC.getInstance().combatLoggerManager.inventory_map.remove(id);
+
+            }
+        }
+    }
 }

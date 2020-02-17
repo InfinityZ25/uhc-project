@@ -34,13 +34,14 @@ public class GHeads extends IScenario {
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&6Golden Head"));
         item.setItemMeta(meta);
         ShapedRecipe recipe = new ShapedRecipe(item);
-        recipe.shape("G", "G", "G", "G", "H", "G", "G", "G", "G");
+        recipe.shape("GGG", "GHG", "GGG");
         recipe.setIngredient('G', Material.GOLD_INGOT);
         recipe.setIngredient('H', Material.SKULL_ITEM, 3);
         Bukkit.addRecipe(recipe);
     }
+
     @Override
-    public void disableScenario(){
+    public void disableScenario() {
         super.disableScenario();
         Bukkit.clearRecipes();
     }

@@ -1,6 +1,7 @@
 package me.infinityz.player;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,10 +14,14 @@ import me.infinityz.whitelist.objects.NoDuplicatesList;
  */
 public class PlayerManager {
     public Map<UUID, UHCPlayer> players;
+    public List<UUID> pending_respawns;
     public UHC instance;
 
     public PlayerManager(UHC instance) {
         players = new HashMap<>();
+        pending_respawns = new NoDuplicatesList<>();
+        this.instance = instance;
+
     }
 
     public int getAlivePlayers() {
@@ -26,6 +31,13 @@ public class PlayerManager {
                 player_count++;
         }
         return player_count;
+    }
+
+    public Map<UUID, Integer> getKT() {
+        Map<UUID, Integer> kt = new HashMap<>();
+        players.values().stream().filter(it -> it.game_kills > 0)
+                .forEach(uhcPlayer -> kt.put(uhcPlayer.uuid, uhcPlayer.game_kills));
+        return kt;
     }
 
     public UHCPlayer getFirstPlayerAlive() {
@@ -64,6 +76,14 @@ public class PlayerManager {
         }
 
         return teams.size();
+    }
+
+    public UHCPlayer findUHCPlayerByCombatLoggerID(int id) {
+        for (UHCPlayer uhc : players.values()) {
+            if (uhc.entity_combatlogger_id == id)
+                return uhc;
+        }
+        return null;
     }
 
 }

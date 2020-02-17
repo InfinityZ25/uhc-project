@@ -19,36 +19,40 @@ import me.infinityz.scenarios.IScenario;
 /**
  * Cutclean
  */
-public class Cutclean extends IScenario{
+public class Cutclean extends IScenario {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBreak(BlockBreakEvent e) {
-        if(e.isCancelled())return;
+        if (e.isCancelled())
+            return;
         final Player player = e.getPlayer();
-        if (player.getGameMode() == GameMode.CREATIVE || player.getItemInHand().containsEnchantment(Enchantment.SILK_TOUCH))
+        if (player.getGameMode() == GameMode.CREATIVE
+                || player.getItemInHand().containsEnchantment(Enchantment.SILK_TOUCH))
             return;
         switch (e.getBlock().getType()) {
         case IRON_ORE: {
-            e.getBlock().setType(Material.GLASS);
+            e.getBlock().setType(Material.AIR);
             dropCenter(new ItemStack(Material.IRON_INGOT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
             ((ExperienceOrb) e.getBlock().getWorld().spawn(e.getBlock().getLocation(), ExperienceOrb.class))
                     .setExperience(2);
             break;
         }
         case GOLD_ORE: {
-            e.getBlock().setType(Material.GLASS);
+            e.getBlock().setType(Material.AIR);
             dropCenter(new ItemStack(Material.GOLD_INGOT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
 
             ((ExperienceOrb) e.getBlock().getWorld().spawn(e.getBlock().getLocation(), ExperienceOrb.class))
                     .setExperience(5);
             break;
         }
-        default:{
+        default: {
             break;
         }
         }
     }
-    //My style of cutclean is just turn natural stuff into cooked stuff. Not adding or changing the actual loot.
+
+    // My style of cutclean is just turn natural stuff into cooked stuff. Not adding
+    // or changing the actual loot.
     @EventHandler(priority = EventPriority.LOW)
     public void onEntityDeath(EntityDeathEvent e) {
         switch (e.getEntityType()) {
@@ -76,19 +80,22 @@ public class Cutclean extends IScenario{
             });
             break;
         }
-        default:{
+        default: {
             break;
         }
         }
     }
-    //Method that ensures ores don't fly like in many other servers
+
+    // Method that ensures ores don't fly like in many other servers
     void dropCenter(ItemStack itemStack, Location location) {
         Location centeredLocation = new Location(location.getWorld(), location.getBlockX() + 0.5,
                 location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
         Item item = location.getWorld().dropItem(centeredLocation, itemStack);
         item.setVelocity(new Vector(0.0, 0.1, 0.0));
-    }    
-    //Quick int method to obtain what the fortune spell should bonus the player when they mine.
+    }
+
+    // Quick int method to obtain what the fortune spell should bonus the player
+    // when they mine.
     int fortune_bonus(Player player) {
         ItemStack hand = player.getItemInHand();
         if (!hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))

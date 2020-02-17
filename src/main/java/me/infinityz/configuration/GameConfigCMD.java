@@ -11,6 +11,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import me.infinityz.UHC;
+import net.md_5.bungee.api.ChatColor;
+
 /**
  * GameConfigCMD
  */
@@ -34,21 +37,70 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
         this.helpArray = array;
     }
 
+    public String formatTime(int seconds) {
+        int hours = seconds / 3600;
+        int minutes = (seconds - hours * 3600) / 60;
+        int second = (seconds - hours * 3600) - minutes * 60;
+
+        String formattedTime = "";
+        if (hours > 0) {
+            if (hours < 10)
+                formattedTime += "0";
+            formattedTime += hours + ":";
+
+            if (minutes < 10)
+                formattedTime += "0";
+            formattedTime += minutes + ":";
+
+            if (second < 10)
+                formattedTime += "0";
+            formattedTime += second;
+        } else {
+            if (minutes < 10)
+                formattedTime += "0";
+            formattedTime += minutes + ":";
+
+            if (second < 10)
+                formattedTime += "0";
+            formattedTime += second;
+        }
+
+        return formattedTime;
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-            Class<?> class2 = GameConfigManager.gameConfig.getClass();
-            List<String> fields = new ArrayList<>();
-            Arrays.asList(class2.getDeclaredFields()).forEach(f -> fields.add(f.getName()));
-            Collections.sort(fields);
-            fields.forEach(field -> {
-                try {
-                    Object data = class2.getDeclaredField(field).get(GameConfigManager.gameConfig);
-                    sender.sendMessage(field + ": " + data.toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+            GameConfig config = GameConfigManager.gameConfig;
+            sender.sendMessage(" ");
+            sender.sendMessage(" ");
+            sender.sendMessage(
+                    ChatColor.GRAY + "Host: " + ChatColor.WHITE + "" + GameConfigManager.last_known_host_name);
+            sender.sendMessage(
+                    ChatColor.GRAY + "Map Size: " + ChatColor.WHITE + "" + config.map_size + "x" + config.map_size);
+            sender.sendMessage(ChatColor.GRAY + "Game Type: " + ChatColor.WHITE
+                    + (UHC.getInstance().teamManager.team_enabled ? "To" + UHC.getInstance().teamManager.team_size
+                            : "FFA"));
+            sender.sendMessage(ChatColor.GRAY + "Scenarios: " + ChatColor.WHITE + ""
+                    + (UHC.getInstance().scenariosManager.getActiveScenarios().isEmpty() ? "Vanilla"
+                            : UHC.getInstance().scenariosManager.getActiveScenariosNames().toString()));
+            sender.sendMessage(
+                    ChatColor.GRAY + "Border Shrink Time: " + ChatColor.WHITE + formatTime(config.border_time));
+            sender.sendMessage(
+                    ChatColor.GRAY + "Final heal Time: " + ChatColor.WHITE + formatTime(config.final_heal_time));
+            sender.sendMessage(ChatColor.GRAY + "Pvp Time: " + ChatColor.WHITE + formatTime(config.pvp_time));
+            sender.sendMessage(ChatColor.GRAY + "Apple Rate: " + ChatColor.WHITE + (config.apple_rate * 100D));
+            sender.sendMessage(ChatColor.GRAY + "Flint Rate: " + ChatColor.WHITE + (config.flint_rate * 100D));
+            sender.sendMessage(ChatColor.GRAY + "Absorption: " + ChatColor.WHITE + config.absorption);
+            sender.sendMessage(ChatColor.GRAY + "God Apples: " + ChatColor.WHITE + config.godapples);
+            sender.sendMessage(ChatColor.GRAY + "Pearl Damage: " + ChatColor.WHITE + config.ender_pearl_damage);
+            sender.sendMessage(ChatColor.GRAY + "Nether: " + ChatColor.WHITE + " true");
+            sender.sendMessage(ChatColor.GRAY + "Strength I: " + ChatColor.WHITE + config.strength_1);
+            sender.sendMessage(ChatColor.GRAY + "Strength II: " + ChatColor.WHITE + config.strength_2);
+            sender.sendMessage(ChatColor.GRAY + "Speed I: " + ChatColor.WHITE + config.speed_1);
+            sender.sendMessage(ChatColor.GRAY + "Speed II: " + ChatColor.WHITE + config.speed_2);
+            sender.sendMessage(" ");
+            sender.sendMessage(" ");
 
             return true;
         }

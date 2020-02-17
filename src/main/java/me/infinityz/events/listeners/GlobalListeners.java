@@ -17,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -30,6 +31,8 @@ import org.bukkit.util.Vector;
 
 import me.infinityz.UHC;
 import me.infinityz.border.BedrockGlassBorder;
+import me.infinityz.player.UHCPlayer;
+import me.infinityz.player.UHCPlayerDisconnectEvent;
 import me.infinityz.protocol.Reflection;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
@@ -54,6 +57,24 @@ public class GlobalListeners extends SkeletonListener {
                     .dropItem(new Location(e.getBlock().getWorld(), e.getBlock().getX() + 0.5,
                             e.getBlock().getY() + 0.2, e.getBlock().getZ() + 0.5), new ItemStack(Material.COBBLESTONE))
                     .setVelocity(new Vector(0.0, 0.2, 0.0));
+        }
+    }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent e) {
+        if (!instance.gameConfigManager.gameConfig.chat) {
+            if (!e.getPlayer().hasPermission("uhc.chat")) {
+                e.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent e) {
+        final Player player = e.getPlayer();
+        final UHCPlayer uhcPlayer = UHC.getInstance().playerManager.getUHCPlayerFromID(player.getUniqueId());
+        if (uhcPlayer != null && uhcPlayer.alive && !uhcPlayer.spectator) {
+            Bukkit.getPluginManager().callEvent(new UHCPlayerDisconnectEvent(e, uhcPlayer));
         }
     }
 

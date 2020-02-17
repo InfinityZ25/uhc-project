@@ -26,8 +26,8 @@ import net.md_5.bungee.api.ChatColor;
  */
 public class LobbyListeners extends SkeletonListener {
 
-    private Location spawnLocation;
-    private String joinMessage;
+    public Location spawnLocation;
+    public String joinMessage;
 
     public LobbyListeners(UHC instance) {
         super(instance);
@@ -42,6 +42,7 @@ public class LobbyListeners extends SkeletonListener {
         final Player player = e.getPlayer();
         // Teleport player to spawn and send motd.
         player.teleport(spawnLocation);
+        Bukkit.getScheduler().runTaskLater(instance, () -> player.teleport(spawnLocation), 10L);
         player.sendMessage(joinMessage);
         // Reset player's inventory, health, effects, and hunger.
         player.setHealth(20D);
@@ -80,8 +81,8 @@ public class LobbyListeners extends SkeletonListener {
 
         });
 
-        new LobbyBoard(player, "&3Arcadens UHC", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>", "<spacer>",
-                "&7Scenarios:", "<scenarios>", "<spacer>", "&3  Arcadens.net ");
+        new LobbyBoard(player, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>",
+                "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>", "&3  Arcadens.net ");
     }
 
     @EventHandler

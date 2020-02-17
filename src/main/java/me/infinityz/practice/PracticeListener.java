@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -34,6 +35,12 @@ public class PracticeListener implements Listener {
             player.spigot().respawn();
             practiceManager.practiceHashSet.remove(player.getUniqueId());
         }
+    }
+
+    @EventHandler
+    public void onss(BlockBreakEvent e) {
+        e.setCancelled(true);
+
     }
 
     @EventHandler

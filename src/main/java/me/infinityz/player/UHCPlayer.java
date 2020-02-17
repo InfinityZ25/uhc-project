@@ -2,6 +2,9 @@ package me.infinityz.player;
 
 import java.util.UUID;
 
+import org.bukkit.Location;
+import org.bukkit.inventory.ItemStack;
+
 import me.infinityz.UHC;
 import me.infinityz.teams.objects.Team;
 
@@ -13,6 +16,11 @@ public class UHCPlayer {
     public UUID[] killed_players;
     public Team team;
     public boolean alive, spectator;
+    public Long died_time;
+    public ItemStack[] death_Inventory;
+    public ItemStack[] armour;
+    public Location death_location;
+    public int entity_combatlogger_id;
     // Local Data, temporal data that does not need to be permanently stored.
     // Just gamekills for now, but later more values.
     public int game_kills;

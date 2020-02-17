@@ -15,6 +15,7 @@ public class GameWinEvent extends Event {
 
     public GameWinEvent(UHCPlayer e, WinType winType) {
         this.uhcPlayer = e;
+        this.winType = winType;
     }
 
     public HandlerList getHandlers() {

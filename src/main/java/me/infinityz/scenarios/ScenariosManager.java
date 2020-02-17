@@ -36,4 +36,13 @@ public class ScenariosManager {
         });
         return scenarios;
     }
+
+    public List<String> getActiveScenariosNames() {
+        List<String> scenarios = new ArrayList<>();
+        scenarioMap.forEach((str, scenario) -> {
+            if (scenario.enabled)
+                scenarios.add(scenario.getClass().getSimpleName());
+        });
+        return scenarios;
+    }
 }

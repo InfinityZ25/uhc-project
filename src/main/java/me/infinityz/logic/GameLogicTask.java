@@ -6,6 +6,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.infinityz.UHC;
 import me.infinityz.scoreboard.ScoreboardSign;
 import me.infinityz.scoreboard.UHCBoard;
+import net.md_5.bungee.api.ChatColor;
 
 /**
  * GameLogicTask
@@ -35,8 +36,8 @@ public class GameLogicTask extends BukkitRunnable {
 
     void checkForGameEvent(int second) {
         if (second == instance.gameConfigManager.gameConfig.border_time) {
-            Bukkit.broadcastMessage(
-                    "[WorldBorder] The Worldboder will shrink 500 blocks every 5 minutes until it reaches 100x100.\n[WorldBorder] Then it will shrink to half of the border size every 5 minutes until 10x10");
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                    "\n&7[WorldBorder] The Worldboder will shrink 500 blocks every 5 minutes until it reaches 100x100.\n[WorldBorder] Then it will shrink to half of the border size every 5 minutes until 10x10\n "));
             new BorderShrinkTask(1500).runTaskTimerAsynchronously(UHC.getInstance(), 0L, 20 * 60);
 
         }
@@ -44,11 +45,11 @@ public class GameLogicTask extends BukkitRunnable {
             Bukkit.getOnlinePlayers().forEach(all -> {
                 all.setHealth(20.0D);
             });
-            Bukkit.broadcastMessage("That was your final heal!");
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "\n&cThat was your final heal!\n "));
         }
         if (second == instance.gameConfigManager.gameConfig.pvp_time) {
             gameLogicManager.game_pvp = true;
-            Bukkit.broadcastMessage("Pvp has been enabled!");
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "\n&cPvp has been enabled!\n "));
         }
 
     }

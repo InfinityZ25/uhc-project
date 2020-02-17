@@ -1,24 +1,26 @@
 package me.infinityz.events.listeners;
 
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftSkeleton;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import me.infinityz.UHC;
+import me.infinityz.combatlogger.CombatLoggerEntity;
+import me.infinityz.combatlogger.EntityTypes;
 import me.infinityz.logic.GameWinEvent;
 import me.infinityz.logic.GameWinEvent.WinType;
 import me.infinityz.player.UHCPlayer;
 import me.infinityz.player.UHCPlayerDeathEvent;
+import me.infinityz.player.UHCPlayerDisconnectEvent;
 import me.infinityz.scoreboard.ScoreboardSign;
 import me.infinityz.scoreboard.UHCBoard;
 import me.infinityz.teams.objects.Team;
+import net.md_5.bungee.api.ChatColor;
 
 /**
  * IngameListeners
@@ -34,10 +36,42 @@ public class IngameListeners extends SkeletonListener {
     public void onJoin(PlayerJoinEvent e) {
         final Player player = e.getPlayer();
         UHCPlayer uhcPlayer = instance.playerManager.getUHCPlayerFromID(player.getUniqueId());
-        if (uhcPlayer != null && uhcPlayer.alive && !uhcPlayer.spectator) {
+        if (uhcPlayer != null) {
+            if (uhcPlayer.alive && !uhcPlayer.spectator) {
+                if (uhcPlayer.entity_combatlogger_id > -1) {
+                    player.getWorld().getEntities().stream().filter(it -> it.getType() == EntityType.SKELETON)
+                            .filter(it -> it.getEntityId() == uhcPlayer.entity_combatlogger_id).forEach(entity -> {
+                                CraftSkeleton skeleton = (CraftSkeleton) entity;
+                                player.setHealth(skeleton.getHealth());
+                                player.teleport(entity);
+                                entity.remove();
+                            });
+                }
+                if (instance.playerManager.pending_respawns.contains(uhcPlayer.uuid)) {
+                    player.getInventory().setContents(uhcPlayer.death_Inventory);
 
-        } else {
-            player.sendMessage("You're not a player. Cant deal with you!");
+                    player.getInventory().setArmorContents(uhcPlayer.armour);
+                    uhcPlayer.armour = null;
+                    uhcPlayer.death_Inventory = null;
+                    uhcPlayer.died_time = null;
+                    Bukkit.getScheduler().runTaskLater(instance, () -> {
+                        player.teleport(uhcPlayer.death_location);
+                        instance.playerManager.pending_respawns.remove(uhcPlayer.uuid);
+                        uhcPlayer.death_location = null;
+                        Bukkit.getOnlinePlayers().forEach(all -> {
+                            all.showPlayer(player);
+                        });
+                    }, 5L);
+
+                }
+            } else {
+                Bukkit.getScheduler().runTaskLater(instance, () -> {
+                    player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation().add(0.0, 2.0, 0.0));
+                }, 3l);
+                Bukkit.getOnlinePlayers().stream().filter(it -> it != player).forEach(all -> {
+                    all.hidePlayer(player);
+                });
+            }
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(UHC.getInstance(), () -> {
@@ -67,19 +101,10 @@ public class IngameListeners extends SkeletonListener {
 
         });
 
-        new UHCBoard(player, "&3Arcadens UHC", "&7Timer: &f<timer>", "<spacer>", "&7Your kills: &f<player_kills>",
-                "<spacer>", "&7Players Left: &f<players_left>", "&7Border: &f<border>", "<spacer>",
-                "&3  Arcadens.net ");
+        new UHCBoard(player, " &3Arcadens UHC &7(Test) ", "&7Timer: &f<timer>", "<spacer>",
+                "&7Your kills: &f<player_kills>", "<spacer>", "&7Players Left: &f<players_left>",
+                "&7Border: &f<border>", "<spacer>", "&3  Arcadens.net ");
 
-    }
-
-    @EventHandler
-    public void onLeave(PlayerQuitEvent e) {/*
-                                             * final Player player = e.getPlayer(); UHCPlayer uhcPlayer =
-                                             * instance.playerManager.getUHCPlayerFromID(player.getUniqueId()); if
-                                             * (uhcPlayer != null && uhcPlayer.alive && !uhcPlayer.spectator) { // Only
-                                             * if pvp is on! instance.combatLoggerManager.skeleton.spawn(player); }
-                                             */
     }
 
     @EventHandler
@@ -88,8 +113,28 @@ public class IngameListeners extends SkeletonListener {
             return;
         if (e.getDamager().getType() == EntityType.PLAYER && e.getEntity().getType() == EntityType.PLAYER) {
             e.setCancelled(true);
-            e.getDamager().sendMessage("Pvp is disabled!");
+            e.getDamager().sendMessage(ChatColor.translateAlternateColorCodes('&', "&c Pvp is disabled!"));
         }
+    }
+
+    @EventHandler
+    public void onUHCDisconnect(UHCPlayerDisconnectEvent e) {
+        if (!e.uhcPlayer.alive) {
+            return;
+        }
+        if (!instance.gameLogicManager.game_pvp) {
+            // If pvp is off, then add him to a schedule that checks last time he was
+            // connected to get him dq'd as soon as pvp is on!
+            return;
+        }
+        Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
+            e.playerQuitEvent.getPlayer().getWorld().loadChunk(e.playerQuitEvent.getPlayer().getLocation().getChunk());
+            EntityTypes.spawnEntity(
+                    new CombatLoggerEntity(e.playerQuitEvent.getPlayer().getWorld(), e.playerQuitEvent.getPlayer()),
+                    e.playerQuitEvent.getPlayer().getLocation());
+
+        });
+
     }
 
     @EventHandler
@@ -97,10 +142,13 @@ public class IngameListeners extends SkeletonListener {
         UHCPlayer uhcplayer = instance.playerManager.getUHCPlayerFromID(e.getEntity().getUniqueId());
         if (uhcplayer != null && uhcplayer.alive && !uhcplayer.spectator) {
             uhcplayer.alive = false;
+            uhcplayer.death_Inventory = e.getEntity().getInventory().getContents();
+            uhcplayer.armour = e.getEntity().getInventory().getArmorContents();
             Bukkit.getPluginManager().callEvent(new UHCPlayerDeathEvent(e, uhcplayer));
         }
         instance.whitelistManager.whitelist.remove(e.getEntity().getUniqueId());
         Bukkit.getScheduler().runTaskLater(instance, () -> {
+            e.getEntity().spigot().respawn();
             e.getEntity().kickPlayer("You've died!");
         }, 20L);
     }
@@ -108,70 +156,82 @@ public class IngameListeners extends SkeletonListener {
     @EventHandler
     public void onUHCDeath(UHCPlayerDeathEvent e) {
         // Later detect if he was the last member of his team and delete them!
-        int i = instance.playerManager.getAlivePlayers();
-        int x = instance.playerManager.getTeamsLeft();
-        Bukkit.getOnlinePlayers().forEach(all -> {
-            ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(all.getUniqueId());
-            if (sb != null && sb instanceof UHCBoard) {
-                UHCBoard board = (UHCBoard) sb;
-                board.queueUpdate(board.players_left, board.players_left_line.replace("<players_left>", i + ""));
+        Bukkit.getScheduler().runTaskAsynchronously(UHC.getInstance(), () -> {
+            // Code for respawn Mechanics starts here
+            e.uhcPlayer.died_time = System.currentTimeMillis();
+            // Maybe implement a way of getting the death combat loggers inventory too.
+            e.uhcPlayer.death_location = e.entityDeathEvent == null ? e.playerDeathEvent.getEntity().getLocation()
+                    : e.entityDeathEvent.getEntity().getLocation();
+            // Respawn mechanics ends here
+            int i = instance.playerManager.getAlivePlayers();
+            int x = instance.playerManager.getTeamsLeft();
+            Bukkit.getOnlinePlayers().forEach(all -> {
+                ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(all.getUniqueId());
+                if (sb != null && sb instanceof UHCBoard) {
+                    UHCBoard board = (UHCBoard) sb;
+                    board.queueUpdate(board.players_left, board.players_left_line.replace("<players_left>", i + ""));
+                    if (instance.teamManager.team_enabled) {
+                        board.queueUpdate(board.team_left, board.team_left_line.replace("<teams_left>", x + ""));
+                    }
+                }
+            });
+            Player killer = (e.entityDeathEvent == null ? e.playerDeathEvent.getEntity().getKiller()
+                    : e.entityDeathEvent.getEntity().getKiller());
+            if (killer != null) {
+                UHCPlayer killer_UHC = instance.playerManager.getUHCPlayerFromID(killer.getUniqueId());
+                if (killer_UHC == null)
+                    return;
+                killer_UHC.game_kills += 1;
                 if (instance.teamManager.team_enabled) {
-                    board.queueUpdate(board.team_left, board.team_left_line.replace("<teams_left>", x + ""));
+                    Team team = killer_UHC.team;
+                    team.team_kills += 1;
+                    if (team != null) {
+                        team.team_members.forEach(all -> {
+                            ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(all);
+                            if (sb != null && sb instanceof UHCBoard) {
+                                UHCBoard board = (UHCBoard) sb;
+                                board.queueUpdate(board.team_kills,
+                                        board.team_kills_line.replace("<team_kills>", team.team_kills + ""));
+                            }
+
+                        });
+                    }
+                }
+                ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(killer.getUniqueId());
+                if (sb != null && sb instanceof UHCBoard) {
+                    UHCBoard board = (UHCBoard) sb;
+                    board.queueUpdate(board.player_kills,
+                            board.player_kills_line.replace("<player_kills>", killer_UHC.game_kills + ""));
                 }
             }
+
+            if (!instance.gameLogicManager.finished) {
+                if (instance.teamManager.team_enabled) {
+                    if (x <= 1) {
+                        Bukkit.getPluginManager().callEvent(
+                                new GameWinEvent(instance.playerManager.getFirstPlayerAlive(), WinType.TEAMS));
+                        instance.gameLogicManager.finished = true;
+                    }
+                } else {
+                    if (i <= 1) {
+                        Bukkit.getPluginManager().callEvent(
+                                new GameWinEvent(instance.playerManager.getFirstPlayerAlive(), WinType.SOLO));
+                        instance.gameLogicManager.finished = true;
+                    }
+                }
+            }
+
         });
-        if (e.playerDeathEvent.getEntity().getKiller() != null) {
-            Player killer = e.playerDeathEvent.getEntity().getKiller();
-            UHCPlayer killer_UHC = instance.playerManager.getUHCPlayerFromID(killer.getUniqueId());
-            if (killer_UHC == null)
-                return;
-            killer_UHC.game_kills += 1;
-            if (instance.teamManager.team_enabled) {
-                Team team = killer_UHC.team;
-                team.team_kills += 1;
-                if (team != null) {
-                    team.team_members.forEach(all -> {
-                        ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(all);
-                        if (sb != null && sb instanceof UHCBoard) {
-                            UHCBoard board = (UHCBoard) sb;
-                            board.queueUpdate(board.team_kills,
-                                    board.team_kills_line.replace("<team_kills>", team.team_kills + ""));
-                        }
-
-                    });
-                }
-            }
-            ScoreboardSign sb = instance.scoreboardManager.scoreboardMap.get(killer.getUniqueId());
-            if (sb != null && sb instanceof UHCBoard) {
-                UHCBoard board = (UHCBoard) sb;
-                board.queueUpdate(board.player_kills, board.player_kills_line.replace("<player_kills>", i + ""));
-            }
-        }
-
-        if (!instance.gameLogicManager.finished) {
-            if (instance.teamManager.team_enabled) {
-                if (instance.playerManager.getTeamsLeft() < 2) {
-                    Bukkit.getPluginManager()
-                            .callEvent(new GameWinEvent(instance.playerManager.getFirstPlayerAlive(), WinType.TEAMS));
-                    instance.gameLogicManager.finished = true;
-                }
-            } else {
-                if (instance.playerManager.getAlivePlayers() < 2) {
-                    Bukkit.getPluginManager()
-                            .callEvent(new GameWinEvent(instance.playerManager.getFirstPlayerAlive(), WinType.SOLO));
-                    instance.gameLogicManager.finished = true;
-                }
-            }
-        }
     }
 
     @EventHandler
     public void onWinEvent(GameWinEvent e) {
+        instance.gameLogicManager.gameLogicTask.cancel();
+
         if (e.winType == WinType.SOLO) {
             if (e.uhcPlayer != null) {
                 Bukkit.broadcastMessage(Bukkit.getOfflinePlayer(e.uhcPlayer.uuid).getName() + " has won the UHC!");
                 // Fireworks effect?
-                instance.gameLogicManager.gameLogicTask.cancel();
             } else {
                 Bukkit.broadcastMessage("There is no winner!!!");
             }
