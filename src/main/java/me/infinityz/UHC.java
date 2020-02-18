@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
@@ -27,6 +30,7 @@ import me.infinityz.scenarios.ScenariosManager;
 import me.infinityz.scoreboard.ScoreboardManager;
 import me.infinityz.teams.TeamManager;
 import me.infinityz.whitelist.WhitelistManager;
+import me.infinityz.whitelist.objects.NoDuplicatesList;
 import me.infinityz.world.WorldManager;
 import net.minecraft.server.v1_8_R3.EntityBat;
 import net.minecraft.server.v1_8_R3.EntityHorse;
@@ -56,6 +60,10 @@ public class UHC extends JavaPlugin implements Listener {
     // TODO: Move this somewhere else?
     public List<Location> locations;
     public HashMap<UUID, Integer> sitted;
+    public ScheduledExecutorService executorService;
+
+    // TODO: MOVE
+    public NoDuplicatesList<Chunk> keepLoaded = new NoDuplicatesList<>();
 
     public static UHC getInstance() {
         return instance;
@@ -66,6 +74,7 @@ public class UHC extends JavaPlugin implements Listener {
         instance = this;
         GameStage.stage = GameStage.LOADING;
         this.locations = new ArrayList<>();
+        this.executorService = Executors.newScheduledThreadPool(4);
         this.sitted = new HashMap<>();
         this.scoreboardManager = new ScoreboardManager();
         this.whitelistManager = new WhitelistManager(this);

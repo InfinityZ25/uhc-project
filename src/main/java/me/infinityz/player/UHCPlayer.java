@@ -16,7 +16,7 @@ public class UHCPlayer {
     public UUID[] killed_players;
     public Team team;
     public boolean alive, spectator;
-    public Long died_time;
+    public Long died_time, last_disconnect_time;
     public ItemStack[] death_Inventory;
     public ItemStack[] armour;
     public Location death_location;

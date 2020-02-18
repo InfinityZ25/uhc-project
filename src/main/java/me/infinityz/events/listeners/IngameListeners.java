@@ -1,10 +1,6 @@
 package me.infinityz.events.listeners;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftSkeleton;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -12,11 +8,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 
 import me.infinityz.UHC;
-import me.infinityz.combatlogger.CombatLoggerEntity;
-import me.infinityz.combatlogger.EntityTypes;
 import me.infinityz.logic.GameWinEvent;
 import me.infinityz.logic.GameWinEvent.WinType;
 import me.infinityz.player.UHCPlayer;
@@ -123,9 +116,6 @@ public class IngameListeners extends SkeletonListener {
         }
     }
 
-    // TODO: MOVE
-    List<Chunk> keepLoaded = new ArrayList<>();
-
     @EventHandler
     public void onUHCDisconnect(UHCPlayerDisconnectEvent e) {
         if (!e.uhcPlayer.alive) {
@@ -135,25 +125,19 @@ public class IngameListeners extends SkeletonListener {
             // If pvp is off, then add him to a schedule that checks last time he was
             // connected to get him dq'd as soon as pvp is on!
             return;
-        }
-        keepLoaded.add(e.playerQuitEvent.getPlayer().getLocation().getChunk());
-        Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
-            e.playerQuitEvent.getPlayer().getWorld().loadChunk(e.playerQuitEvent.getPlayer().getLocation().getChunk());
-            EntityTypes.spawnEntity(
-                    new CombatLoggerEntity(e.playerQuitEvent.getPlayer().getWorld(), e.playerQuitEvent.getPlayer()),
-                    e.playerQuitEvent.getPlayer().getLocation());
-            keepLoaded.remove(e.playerQuitEvent.getPlayer().getLocation().getChunk());
+        } /*
+           * keepLoaded.add(e.playerQuitEvent.getPlayer().getLocation().getChunk());
+           * Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
+           * e.playerQuitEvent.getPlayer().getWorld().loadChunk(e.playerQuitEvent.
+           * getPlayer().getLocation().getChunk()); EntityTypes.spawnEntity( new
+           * CombatLoggerEntity(e.playerQuitEvent.getPlayer().getWorld(),
+           * e.playerQuitEvent.getPlayer()), e.playerQuitEvent.getPlayer().getLocation());
+           * keepLoaded.remove(e.playerQuitEvent.getPlayer().getLocation().getChunk());
+           * 
+           * });
+           */
+        // TODO: FIX COMBAT LOGGER
 
-        });
-
-    }
-
-    @EventHandler
-    public void onChunkUnload(ChunkUnloadEvent e) {
-        if (keepLoaded.contains(e.getChunk())) {
-            e.getChunk().load();
-            e.setCancelled(true);
-        }
     }
 
     @EventHandler
@@ -161,6 +145,7 @@ public class IngameListeners extends SkeletonListener {
         UHCPlayer uhcplayer = instance.playerManager.getUHCPlayerFromID(e.getEntity().getUniqueId());
         if (uhcplayer != null && uhcplayer.alive && !uhcplayer.spectator) {
             uhcplayer.alive = false;
+            uhcplayer.last_disconnect_time = 0L;
             uhcplayer.death_Inventory = e.getEntity().getInventory().getContents();
             uhcplayer.armour = e.getEntity().getInventory().getArmorContents();
             Bukkit.getPluginManager().callEvent(new UHCPlayerDeathEvent(e, uhcplayer));

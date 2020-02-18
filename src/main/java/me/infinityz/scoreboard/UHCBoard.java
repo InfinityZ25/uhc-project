@@ -97,10 +97,10 @@ public class UHCBoard extends ScoreboardSign {
 
     public void updateBorder(String new_border, boolean force) {
         if (force) {
-            super.forceUpdate(timer, timer_line.replace("<border>", new_border));
+            super.forceUpdate(border, border_line.replace("<border>", new_border));
             return;
         }
-        super.queueUpdate(timer, timer_line.replace("<border>", new_border));
+        super.queueUpdate(border, border_line.replace("<border>", new_border));
     }
 
 }

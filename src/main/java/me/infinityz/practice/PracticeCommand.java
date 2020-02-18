@@ -44,6 +44,9 @@ public class PracticeCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (args.length > 0) {
+            if (!sender.hasPermission("uhc.practice.manage")) {
+                return true;
+            }
             switch (args[0].toLowerCase()) {
             case "on":
             case "true":

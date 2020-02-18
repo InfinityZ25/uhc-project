@@ -2,13 +2,15 @@ package me.infinityz.events.listeners;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,18 +31,19 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import me.infinityz.UHC;
-import me.infinityz.border.BedrockGlassBorder;
 import me.infinityz.player.UHCPlayer;
 import me.infinityz.player.UHCPlayerDisconnectEvent;
 import me.infinityz.protocol.Reflection;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
+import me.infinityz.scoreboard.UHCBoard;
 
 /**
  * GlobalListeners
@@ -49,19 +52,110 @@ public class GlobalListeners extends SkeletonListener {
     public Map<UUID, Long> time;
     public int chat_delay_ms;
 
+    @SuppressWarnings("all")
     public GlobalListeners(final UHC instance) {
         super(instance);
         time = new HashMap<>();
         chat_delay_ms = 3000;
-        new BedrockGlassBorder(instance).runTaskTimerAsynchronously(instance, 0, 5);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(instance, () -> {
-            new HashMap<>(time).forEach((uuid, l) -> {
-                if (l + chat_delay_ms <= System.currentTimeMillis()) {
-                    time.remove(uuid);
-                }
-            });
+        // new BedrockGlassBorder(instance).runTaskTimerAsynchronously(instance, 0, 5);
+        instance.executorService.scheduleAtFixedRate(() -> {
+            final int new_aliv = UHC.getInstance().playerManager.getAlivePlayers();
+            final boolean isteam = UHC.getInstance().teamManager.team_enabled;
+            final int teams_left = UHC.getInstance().playerManager.getTeamsLeft();
+            instance.playerManager.players.values().stream().filter(it -> it.last_disconnect_time > 0 && it.alive)
+                    .forEach(it -> {
+                        if (it.last_disconnect_time + (1000 * 60) >= System.currentTimeMillis()) {
+                            // TODO:BROADCAST THE NAME OF THE DEAD PLAYER
+                            instance.scoreboardManager.scoreboardMap.values().forEach(sb -> {
+                                if (sb instanceof UHCBoard) {
+                                    final UHCBoard uhcb = (UHCBoard) sb;
+                                    uhcb.updatePlayersLeft(new_aliv);
+                                    if (isteam) {
+                                        uhcb.updateTeamsLeft(teams_left);
+                                    }
+                                }
+                            });
 
-        }, 40L, 5);
+                        }
+                    });
+
+        }, 0, 30, TimeUnit.SECONDS);
+
+        instance.executorService.scheduleAtFixedRate(new TimerTask() {
+            Map<UUID, Collection<Vector>> map = new HashMap<>();
+            UHC insta = instance;
+
+            // Method that checks weather the player is near the wall or not
+            boolean isNearWall(final Player p, final double wall, final double check_distance) {
+                final Location loc = p.getLocation();
+                // Get the absolute int of player's location and check if it is in proximity to
+                // a "wall"
+                if (Math.abs(loc.getX()) + check_distance >= wall || Math.abs(loc.getZ()) + check_distance >= wall)
+                    return true;
+                // Return the inverse.
+                return false;
+            }
+
+            // Obtains the right blocks near to the player that must be set to crystal!
+            List<Vector> getLocationalVectors(Location loc, int min_height, int max_height, int radius, int wall) {
+                List<Vector> vector_list = new ArrayList<>();
+                for (int x = loc.getBlockX() - radius; x <= loc.getBlockX() + radius; x++) {
+                    for (int z = loc.getBlockZ() - radius; z <= loc.getBlockZ() + radius; z++) {
+                        int absolute_x = Math.abs(x);
+                        int absolute_z = Math.abs(z);
+                        if (absolute_x != wall && absolute_z != wall)
+                            continue;
+                        if (absolute_x > wall || absolute_z > wall)
+                            continue;
+                        for (int y = loc.getBlockY() - min_height; y <= loc.getBlockY() + max_height; y++) {
+                            int block_id = loc.getWorld().getBlockTypeIdAt(x, y, z);
+                            if (block_id != 0)
+                                continue;
+                            vector_list.add(new Vector(x, y, z));
+                        }
+                    }
+                }
+                return vector_list;
+            }
+
+            @Override
+            public void run() {
+                Bukkit.getOnlinePlayers().forEach(player -> {
+                    if (isNearWall(player, instance.gameConfigManager.gameConfig.map_size - 3, 7)) {
+                        List<Vector> collection = getLocationalVectors(player.getLocation(), 2, 3, 7,
+                                instance.gameConfigManager.gameConfig.map_size);
+
+                        if (map.containsKey(player.getUniqueId())) {
+                            List<Vector> vList = new ArrayList<>(map.get(player.getUniqueId()));
+                            vList.forEach(vector -> {
+                                if (collection.contains(vector))
+                                    return;
+                                player.sendBlockChange(vector.toLocation(player.getWorld()), Material.AIR, (byte) 0);
+                            });
+                            vList = null;
+                        }
+                        collection.forEach(vector -> player.sendBlockChange(
+                                vector.toLocation(player.getLocation().getWorld()), Material.STAINED_GLASS, (byte) 14));
+                        map.put(player.getUniqueId(), collection);
+                        return;
+                    }
+                    if (map.containsKey(player.getUniqueId())) {
+                        List<Vector> vectors = new ArrayList<>(map.get(player.getUniqueId()));
+                        vectors.forEach(vector -> player.sendBlockChange(vector.toLocation(player.getWorld()),
+                                Material.AIR, (byte) 0));
+                        vectors = null;
+                        map.remove(player.getUniqueId());
+                    }
+                });
+            }
+        }, 50, 50, TimeUnit.MILLISECONDS);
+    }
+
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent e) {
+        if (instance.keepLoaded.contains(e.getChunk())) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -88,21 +182,17 @@ public class GlobalListeners extends SkeletonListener {
     }
 
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent e) {
-        if (!instance.gameConfigManager.gameConfig.chat) {
-            if (!e.getPlayer().hasPermission("uhc.chat")) {
-                e.setCancelled(true);
-                return;
-            }
-        }
-        final Long t = time.get(e.getPlayer().getUniqueId());
-        if (t != null) {
-            double rounded_time = Math.round(((System.currentTimeMillis() - t - chat_delay_ms) / 1000D) * 10) / 10.0;
-            e.getPlayer().sendMessage(
-                    ChatColor.RED + "You have to wait at least " + Math.abs(rounded_time) + "s to talk again");
-            e.setCancelled(true);
-        }
-        time.putIfAbsent(e.getPlayer().getUniqueId(), System.currentTimeMillis());
+    public void onChat(
+            AsyncPlayerChatEvent e) {/*
+                                      * if (!instance.gameConfigManager.gameConfig.chat) { if
+                                      * (!e.getPlayer().hasPermission("uhc.chat")) { e.setCancelled(true); return; }
+                                      * } final Long t = time.get(e.getPlayer().getUniqueId()); if (t != null) {
+                                      * double rounded_time = Math.round(((System.currentTimeMillis() - t -
+                                      * chat_delay_ms) / 1000D) * 10) / 10.0; e.getPlayer().sendMessage(
+                                      * ChatColor.RED + "You have to wait at least " + Math.abs(rounded_time) +
+                                      * "s to talk again"); e.setCancelled(true); }
+                                      * time.putIfAbsent(e.getPlayer().getUniqueId(), System.currentTimeMillis());
+                                      */
 
     }
 
@@ -112,6 +202,7 @@ public class GlobalListeners extends SkeletonListener {
         final UHCPlayer uhcPlayer = UHC.getInstance().playerManager.getUHCPlayerFromID(player.getUniqueId());
         if (uhcPlayer != null && uhcPlayer.alive && !uhcPlayer.spectator) {
             Bukkit.getPluginManager().callEvent(new UHCPlayerDisconnectEvent(e, uhcPlayer));
+            uhcPlayer.last_disconnect_time = System.currentTimeMillis();
         }
     }
 

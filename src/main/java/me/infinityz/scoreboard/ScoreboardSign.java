@@ -2,6 +2,7 @@ package me.infinityz.scoreboard;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -170,7 +171,7 @@ public class ScoreboardSign {
      * I'm begging you lol.
      */
     public void update() {
-        updateHashSet.forEach(object -> {
+        new HashSet<>(updateHashSet).forEach(object -> {
             VirtualTeam team = lines[object.line_id];
             if (team != null && team.val.equalsIgnoreCase(ChatColor.translateAlternateColorCodes('&', object.line))) {
                 object.destroy();

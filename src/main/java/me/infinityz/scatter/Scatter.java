@@ -46,6 +46,7 @@ public class Scatter extends BukkitRunnable {
                     continue;
                 }
                 locations.add(centerLocation(loc));
+                UHC.getInstance().keepLoaded.add(loc.getChunk());
 
             }
             return;

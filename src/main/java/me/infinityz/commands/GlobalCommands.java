@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -60,220 +62,230 @@ public class GlobalCommands implements CommandExecutor {
             final Player player = (Player) sender;
             // Obtain, if exist, the player's scoreboard.
             switch (args[0].toLowerCase()) {
-            case "border": {
-                final int i = Integer.parseInt(args[1]);
-                final int wall_size = Integer.parseInt(args[2]);
-                // putWall(player.getLocation().getWorld(), i, wall_size);
-                final BedrockBorderTask borderTask = new BedrockBorderTask(player.getLocation().getWorld(), i,
-                        wall_size, Integer.parseInt(args[3]));
-                borderTask.runTaskTimer(instance, 0, Integer.parseInt(args[4]));
-                break;
-            }
-            case "bedrock": {
-                if (args.length < 3) {
-                    sender.sendMessage("Usage: /uhc bedrock <world> <size> <height>");
-                    return true;
-                }
-                final BedrockBorderTask borderTask = new BedrockBorderTask(Bukkit.getWorld(args[1]),
-                        Integer.parseInt(args[2]), Integer.parseInt(args[3]), 200);
-                borderTask.runTaskTimer(instance, 0, 20 * 2);
-
-                break;
-            }
-            case "find": {
-                new Scatter(Bukkit.getWorld("UHC"), UHC.getInstance().gameConfigManager.gameConfig.map_size, 100,
-                        Integer.parseInt(args[1]), 150).runTaskTimer(UHC.getInstance(), 40L, 20L);
-                break;
-            }
-            case "scatter": {
-                break;
-            }
-            case "practice": {
-                if (instance.practiceManager.isInPractice(player.getUniqueId())) {
-                    instance.practiceManager.leavePractice(player);
+                case "border": {
+                    final int i = Integer.parseInt(args[1]);
+                    final int wall_size = Integer.parseInt(args[2]);
+                    // putWall(player.getLocation().getWorld(), i, wall_size);
+                    final BedrockBorderTask borderTask = new BedrockBorderTask(player.getLocation().getWorld(), i,
+                            wall_size, Integer.parseInt(args[3]));
+                    borderTask.runTaskTimer(instance, 0, Integer.parseInt(args[4]));
                     break;
                 }
-                instance.practiceManager.joinPractice(player);
-                break;
-            }
-            case "tpw": {
-                player.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
-                break;
-            }
-            case "start": {
-                if (GameStage.stage != GameStage.LOBBY) {
-                    sender.sendMessage("You can't start the game when gamestage is " + GameStage.stage.toString());
-                    return true;
-                }
-                if (instance.locations == null || instance.locations.isEmpty()) {
-                    sender.sendMessage("You can't start the game with no locations loaded!");
-
-                    return true;
-                }
-                if (instance.practiceManager.enabled) {
-                    // Disable an unload practice
-                    UHC.getInstance().practiceManager.enabled = false;
-                    // Ensure that no errors occur by clonning the hashset and interating
-                    new HashSet<>(UHC.getInstance().practiceManager.practiceHashSet).forEach(it -> {
-                        final Player pl = Bukkit.getPlayer(it);
-                        if (pl != null && pl.isOnline()) {
-                            UHC.getInstance().practiceManager.leavePractice(pl);
-                        }
-                    });
-                    UHC.getInstance().practiceManager.practiceHashSet.clear();
-                    if (UHC.getInstance().teamManager.team_enabled) {
-                        UHC.getInstance().teamManager.team_management = false;
-                    }
-                    HandlerList.unregisterAll(UHC.getInstance().practiceManager.practiceListener);
-                }
-                // Whitelist everyone and clear the whitelistors
-                instance.whitelistManager.whitelist_enabled = true;
-                Bukkit.getOnlinePlayers().stream().forEach(all -> {
-                    instance.whitelistManager.whitelist.add(all.getUniqueId());
-                });
-                instance.whitelistManager.whitelistorPlayers.clear();
-                // Let the server know that the game is starting
-                // Maybe call an event??
-                GameStage.stage = GameStage.PRE_GAME;
-                // Take it to the scatter task from now on!
-                // Call PreGameStartEvent;
-                Bukkit.getPluginManager().callEvent(new PreGameStartEvent(sender));
-
-                break;
-            }
-            case "host": {
-                final OfflinePlayer of = Bukkit.getOfflinePlayer(args[1]);
-                instance.gameConfigManager.host = of.getUniqueId();
-                instance.gameConfigManager.last_known_host_name = of.getName();
-                break;
-            }
-
-            case "show_enchants": {
-
-                final Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
-                try {
-                    final Field field = tableClass.getDeclaredField("show_enchants");
-                    field.setAccessible(true);
-                    field.set(null, Boolean.parseBoolean(args[1]));
-
-                } catch (final Exception e) {
-                }
-                break;
-            }
-
-            case "fix": {
-                final Location pl = player.getLocation();
-                player.teleport(Bukkit.getWorld("Practice").getSpawnLocation());
-                Bukkit.getScheduler().runTaskLater(instance, () -> {
-                    player.teleport(pl);
-                }, 2L);
-            }
-            case "kt": {
-                final Map<UUID, Integer> tm = instance.playerManager.getKT();
-                final LinkedHashMap<UUID, Integer> ltm = new LinkedHashMap<>();
-                tm.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).limit(10)
-                        .forEachOrdered(x -> ltm.put(x.getKey(), x.getValue()));
-                int i = 0;
-                for (final Entry<UUID, Integer> entry : ltm.entrySet()) {
-                    i++;
-                    sender.sendMessage(i + ". " + Bukkit.getOfflinePlayer(entry.getKey()).getName() + ": "
-                            + entry.getValue() + " kills");
-                }
-                /*
-                 * instance.playerManager.getKT().forEach((uuid, kills) -> {
-                 * sender.sendMessage(Bukkit.getOfflinePlayer(uuid).getName() + " has made " +
-                 * kills); });
-                 */
-            }
-
-            case "old_levels": {
-
-                final Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
-                try {
-                    final Field field = tableClass.getDeclaredField("old_levels");
-                    field.setAccessible(true);
-                    field.set(null, Boolean.parseBoolean(args[1]));
-
-                } catch (final Exception e) {
-                }
-                break;
-            }
-            case "scenario": {
-                final IScenario scenario = instance.scenariosManager.scenarioMap.get(args[1]);
-                if (scenario.enabled) {
-                    scenario.disableScenario();
-                    Bukkit.getPluginManager().callEvent(new ScenarioDisabledEvent(scenario, (Player) sender));
-                } else {
-                    scenario.enableScenario();
-                    Bukkit.getPluginManager().callEvent(new ScenarioEnabledEvent(scenario, (Player) sender));
-                }
-
-                break;
-            }
-            case "respawn": {
-                final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
-                if (offlinePlayer != null) {
-                    final UHCPlayer uhcPlayer = instance.playerManager.getUHCPlayerFromID(offlinePlayer.getUniqueId());
-                    if (uhcPlayer != null) {
-                        uhcPlayer.alive = true;
-                        Bukkit.broadcastMessage("[UHC] " + offlinePlayer.getName() + " has been respawned!");
-                        // Update player's scoreboard
-                        final int new_aliv = UHC.getInstance().playerManager.getAlivePlayers();
-                        final int new_team = UHC.getInstance().playerManager.getTeamsLeft();
-                        final boolean team = UHC.getInstance().teamManager.team_enabled;
-                        UHC.getInstance().scoreboardManager.scoreboardMap.values().forEach(sb -> {
-                            if (sb instanceof UHCBoard) {
-                                final UHCBoard uhcb = (UHCBoard) sb;
-                                uhcb.updatePlayersLeft(new_aliv);
-                                if (team) {
-                                    uhcb.updateTeamsLeft(new_team);
-                                }
-                            }
-                        });
-                        if (offlinePlayer.isOnline()) {
-                            final Player onlinePlayer = offlinePlayer.getPlayer();
-                            onlinePlayer.getInventory().setContents(uhcPlayer.death_Inventory);
-
-                            onlinePlayer.getInventory().setArmorContents(uhcPlayer.armour);
-                            onlinePlayer.teleport(uhcPlayer.death_location);
-                        } else {
-                            // Queue them up!
-                        }
+                case "bedrock": {
+                    if (args.length < 3) {
+                        sender.sendMessage("Usage: /uhc bedrock <world> <size> <height>");
                         return true;
                     }
-                    sender.sendMessage(args[1] + " has not played in this game!");
-                    return true;
-                }
-                break;
-            }
-            case "rate": {
-                switch (args[1].toLowerCase()) {
-                case "apple": {
-                    Bukkit.broadcastMessage("Applec rate: " + instance.gameConfigManager.gameConfig.apple_rate);
-                    instance.gameConfigManager.gameConfig.apple_rate = Double.parseDouble(args[2]);
-                    Bukkit.broadcastMessage("New Apple rate: " + instance.gameConfigManager.gameConfig.apple_rate);
-                    break;
-                }
-                case "flint": {
-                    Bukkit.broadcastMessage("Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
+                    final BedrockBorderTask borderTask = new BedrockBorderTask(Bukkit.getWorld(args[1]),
+                            Integer.parseInt(args[2]), Integer.parseInt(args[3]), 200);
+                    borderTask.runTaskTimer(instance, 0, 20 * 2);
 
-                    instance.gameConfigManager.gameConfig.flint_rate = Double.parseDouble(args[2]);
-                    Bukkit.broadcastMessage("New Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
                     break;
                 }
+                case "chunks": {
+
+                    break;
                 }
-                break;
-            }
-            case "velocity": {/*
-                               * // Get velocity unit vector: Vector unitVector =
-                               * player.getLocation().toVector().subtract(player.getLocation().toVector())
-                               * .normalize(); // Set speed and push entity:
-                               * player.setVelocity(unitVector.multiply(Double.parseDouble(args[1])));
-                               */
-                player.setVelocity(player.getLocation().getDirection().multiply(Double.parseDouble(args[1])));
-                // knockBack(player, player.getLocation());
-                break;
-            }
+                case "find": {
+                    new Scatter(Bukkit.getWorld("UHC"), UHC.getInstance().gameConfigManager.gameConfig.map_size, 100,
+                            Integer.parseInt(args[1]), 150).runTaskTimer(UHC.getInstance(), 40L, 20L);
+                    break;
+                }
+                case "scatter": {
+                    sender.sendMessage(UHC.getInstance().keepLoaded.size() + " chunks are being kept loaded atm!");
+                    break;
+                }
+                case "practice": {
+                    if (instance.practiceManager.isInPractice(player.getUniqueId())) {
+                        instance.practiceManager.leavePractice(player);
+                        break;
+                    }
+                    instance.practiceManager.joinPractice(player);
+                    break;
+                }
+                case "tpw": {
+                    player.teleport(Bukkit.getWorld(args[1]).getSpawnLocation());
+                    break;
+                }
+                case "start": {
+                    if (GameStage.stage != GameStage.LOBBY) {
+                        sender.sendMessage("You can't start the game when gamestage is " + GameStage.stage.toString());
+                        return true;
+                    }
+                    if (instance.locations == null || instance.locations.isEmpty()) {
+                        sender.sendMessage("You can't start the game with no locations loaded!");
+
+                        return true;
+                    }
+                    if (instance.practiceManager.enabled) {
+                        // Disable an unload practice
+                        UHC.getInstance().practiceManager.enabled = false;
+                        // Ensure that no errors occur by clonning the hashset and interating
+                        new HashSet<>(UHC.getInstance().practiceManager.practiceHashSet).forEach(it -> {
+                            final Player pl = Bukkit.getPlayer(it);
+                            if (pl != null && pl.isOnline()) {
+                                UHC.getInstance().practiceManager.leavePractice(pl);
+                            }
+                        });
+                        UHC.getInstance().practiceManager.practiceHashSet.clear();
+                        if (UHC.getInstance().teamManager.team_enabled) {
+                            UHC.getInstance().teamManager.team_management = false;
+                        }
+                        HandlerList.unregisterAll(UHC.getInstance().practiceManager.practiceListener);
+                    }
+                    // Whitelist everyone and clear the whitelistors
+                    instance.whitelistManager.whitelist_enabled = true;
+                    Bukkit.getOnlinePlayers().stream().forEach(all -> {
+                        instance.whitelistManager.whitelist.add(all.getUniqueId());
+                    });
+                    instance.whitelistManager.whitelistorPlayers.clear();
+                    // Let the server know that the game is starting
+                    // Maybe call an event??
+                    GameStage.stage = GameStage.PRE_GAME;
+                    // Take it to the scatter task from now on!
+                    // Call PreGameStartEvent;
+                    Bukkit.getPluginManager().callEvent(new PreGameStartEvent(sender));
+
+                    break;
+                }
+                case "host": {
+                    final OfflinePlayer of = Bukkit.getOfflinePlayer(args[1]);
+                    instance.gameConfigManager.host = of.getUniqueId();
+                    instance.gameConfigManager.last_known_host_name = of.getName();
+                    break;
+                }
+
+                case "show_enchants": {
+
+                    final Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
+                    try {
+                        final Field field = tableClass.getDeclaredField("show_enchants");
+                        field.setAccessible(true);
+                        field.set(null, Boolean.parseBoolean(args[1]));
+
+                    } catch (final Exception e) {
+                    }
+                    break;
+                }
+
+                case "fix": {
+                    final Location pl = player.getLocation();
+                    player.teleport(Bukkit.getWorld("Practice").getSpawnLocation());
+                    Bukkit.getScheduler().runTaskLater(instance, () -> {
+                        player.teleport(pl);
+                    }, 2L);
+                    break;
+                }
+                case "kt": {
+                    final Map<UUID, Integer> tm = instance.playerManager.getKT();
+                    final LinkedHashMap<UUID, Integer> ltm = new LinkedHashMap<>();
+                    tm.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).limit(10)
+                            .forEachOrdered(x -> ltm.put(x.getKey(), x.getValue()));
+                    int i = 0;
+                    for (final Entry<UUID, Integer> entry : ltm.entrySet()) {
+                        i++;
+                        sender.sendMessage(i + ". " + Bukkit.getOfflinePlayer(entry.getKey()).getName() + ": "
+                                + entry.getValue() + " kills");
+                    }
+                    break;
+                    /*
+                     * instance.playerManager.getKT().forEach((uuid, kills) -> {
+                     * sender.sendMessage(Bukkit.getOfflinePlayer(uuid).getName() + " has made " +
+                     * kills); });
+                     */
+                }
+
+                case "old_levels": {
+
+                    final Class<?> tableClass = Reflection.getClass("{nms}.ContainerEnchantTable");
+                    try {
+                        final Field field = tableClass.getDeclaredField("old_levels");
+                        field.setAccessible(true);
+                        field.set(null, Boolean.parseBoolean(args[1]));
+
+                    } catch (final Exception e) {
+                    }
+                    break;
+                }
+                case "scenario": {
+                    final IScenario scenario = instance.scenariosManager.scenarioMap.get(args[1]);
+                    if (scenario.enabled) {
+                        scenario.disableScenario();
+                        Bukkit.getPluginManager().callEvent(new ScenarioDisabledEvent(scenario, (Player) sender));
+                    } else {
+                        scenario.enableScenario();
+                        Bukkit.getPluginManager().callEvent(new ScenarioEnabledEvent(scenario, (Player) sender));
+                    }
+
+                    break;
+                }
+                case "respawn": {
+                    final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+                    if (offlinePlayer != null) {
+                        final UHCPlayer uhcPlayer = instance.playerManager
+                                .getUHCPlayerFromID(offlinePlayer.getUniqueId());
+                        if (uhcPlayer != null) {
+                            uhcPlayer.alive = true;
+                            Bukkit.broadcastMessage("[UHC] " + offlinePlayer.getName() + " has been respawned!");
+                            // Update player's scoreboard
+                            final int new_aliv = UHC.getInstance().playerManager.getAlivePlayers();
+                            final int new_team = UHC.getInstance().playerManager.getTeamsLeft();
+                            final boolean team = UHC.getInstance().teamManager.team_enabled;
+                            UHC.getInstance().scoreboardManager.scoreboardMap.values().forEach(sb -> {
+                                if (sb instanceof UHCBoard) {
+                                    final UHCBoard uhcb = (UHCBoard) sb;
+                                    uhcb.updatePlayersLeft(new_aliv);
+                                    if (team) {
+                                        uhcb.updateTeamsLeft(new_team);
+                                    }
+                                }
+                            });
+                            if (offlinePlayer.isOnline()) {
+                                final Player onlinePlayer = offlinePlayer.getPlayer();
+                                onlinePlayer.getInventory().setContents(uhcPlayer.death_Inventory);
+
+                                onlinePlayer.getInventory().setArmorContents(uhcPlayer.armour);
+                                onlinePlayer.teleport(uhcPlayer.death_location);
+                            } else {
+                                // Queue them up!
+                            }
+                            return true;
+                        }
+                        sender.sendMessage(args[1] + " has not played in this game!");
+                        return true;
+                    }
+                    break;
+                }
+                case "rate": {
+                    switch (args[1].toLowerCase()) {
+                        case "apple": {
+                            Bukkit.broadcastMessage("Applec rate: " + instance.gameConfigManager.gameConfig.apple_rate);
+                            instance.gameConfigManager.gameConfig.apple_rate = Double.parseDouble(args[2]);
+                            Bukkit.broadcastMessage(
+                                    "New Apple rate: " + instance.gameConfigManager.gameConfig.apple_rate);
+                            break;
+                        }
+                        case "flint": {
+                            Bukkit.broadcastMessage("Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
+
+                            instance.gameConfigManager.gameConfig.flint_rate = Double.parseDouble(args[2]);
+                            Bukkit.broadcastMessage(
+                                    "New Flint rate: " + instance.gameConfigManager.gameConfig.flint_rate);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case "velocity": {/*
+                                   * // Get velocity unit vector: Vector unitVector =
+                                   * player.getLocation().toVector().subtract(player.getLocation().toVector())
+                                   * .normalize(); // Set speed and push entity:
+                                   * player.setVelocity(unitVector.multiply(Double.parseDouble(args[1])));
+                                   */
+                    player.setVelocity(player.getLocation().getDirection().multiply(Double.parseDouble(args[1])));
+                    // knockBack(player, player.getLocation());
+                    break;
+                }
 
             }
 

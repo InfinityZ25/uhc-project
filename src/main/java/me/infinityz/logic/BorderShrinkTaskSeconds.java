@@ -43,6 +43,21 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
             });
 
             switch (to_shrink_size) {
+            case 3000: {
+                new BorderShrinkTask(2500).runTaskTimerAsynchronously(UHC.getInstance(), 0L, 20 * 60);
+                // Shrink to 2000
+                break;
+            }
+            case 2500: {
+                new BorderShrinkTask(2000).runTaskTimerAsynchronously(UHC.getInstance(), 0L, 20 * 60);
+                // Shrink to 2000
+                break;
+            }
+            case 2000: {
+                new BorderShrinkTask(1500).runTaskTimerAsynchronously(UHC.getInstance(), 0L, 20 * 60);
+                // Shrink to 1500
+                break;
+            }
             case 1500: {
                 new BorderShrinkTask(1000).runTaskTimerAsynchronously(UHC.getInstance(), 0L, 20 * 60);
                 // Shrink to 1000
@@ -93,33 +108,24 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
             Bukkit.broadcastMessage(
                     ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
                             + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " seconds!"));
-            String update_str = ChatColor.translateAlternateColorCodes('&',
-                    UHC.getInstance().gameConfigManager.gameConfig.map_size + " &8(&a" + t + "s&8)");
-            Bukkit.getOnlinePlayers().parallelStream().forEach(all -> {
-                ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
-                if (sb != null && sb instanceof UHCBoard) {
-                    UHCBoard board = (UHCBoard) sb;
-                    board.updateBorder(update_str, false);
-                }
-            });
             break;
         }
         case 1: {
             Bukkit.broadcastMessage(
                     ChatColor.translateAlternateColorCodes('&', "&7[WorldBorder] The world will shrink to &f"
                             + to_shrink_size + "x" + to_shrink_size + "&7 in " + t + " second!"));
-            String update_str = ChatColor.translateAlternateColorCodes('&',
-                    UHC.getInstance().gameConfigManager.gameConfig.map_size + " &8(&a" + t + "s&8)");
-            Bukkit.getOnlinePlayers().parallelStream().forEach(all -> {
-                ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
-                if (sb != null && sb instanceof UHCBoard) {
-                    UHCBoard board = (UHCBoard) sb;
-                    board.updateBorder(update_str, false);
-                }
-            });
             break;
         }
         }
+        String update_str = ChatColor.translateAlternateColorCodes('&',
+                UHC.getInstance().gameConfigManager.gameConfig.map_size + " &8(&a" + t + "s&8)");
+        Bukkit.getOnlinePlayers().parallelStream().forEach(all -> {
+            ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
+            if (sb != null && sb instanceof UHCBoard) {
+                UHCBoard board = (UHCBoard) sb;
+                board.updateBorder(update_str, false);
+            }
+        });
         t--;
     }
 

@@ -1,5 +1,8 @@
 package me.infinityz.teams.listener;
 
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -16,7 +19,6 @@ import me.infinityz.UHC;
 import me.infinityz.UHC.GameStage;
 import me.infinityz.events.listeners.IngameListeners;
 import me.infinityz.events.listeners.ScatterListeners;
-import me.infinityz.logic.GameStartEvent;
 import me.infinityz.logic.GameStartedEvent;
 import me.infinityz.logic.PlayerScatteredEvent;
 import me.infinityz.logic.PreGameStartEvent;
@@ -183,6 +185,8 @@ public class TeamListener implements Listener {
     public void enableScenarios(ScenarioDisabledEvent e) {
         if (GameStage.stage != GameStage.LOBBY)
             return;
+        // TODO: THIS CAN BE CHANGED SINCE ALL PLAYRES HAVE A SCOREBOARD, ITERATE
+        // THROUGH THE SCOREBOARDS MAP INSTEAD.
         Bukkit.getScheduler().runTaskAsynchronously(UHC.getInstance(), () -> {
             Bukkit.getOnlinePlayers().forEach(all -> {
                 ScoreboardSign sb = UHC.getInstance().scoreboardManager.scoreboardMap.get(all.getUniqueId());
@@ -221,7 +225,7 @@ public class TeamListener implements Listener {
     @EventHandler
     public void onLocationsFound(ScatterLocationsFoundEvent e) {
         Bukkit.broadcastMessage("Scatter loactions have been found!");
-        new Teleport(UHC.getInstance(), UHC.getInstance().locations, 400).runTaskTimer(UHC.getInstance(), 10, 20 * 2);
+        new Teleport(UHC.getInstance(), UHC.getInstance().locations, 400).runTaskTimer(UHC.getInstance(), 10, 15);
         World w = Bukkit.getWorld("UHC");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
                 "wb set UHC " + UHC.getInstance().gameConfigManager.gameConfig.map_size + " "
@@ -233,46 +237,77 @@ public class TeamListener implements Listener {
         GameStage.stage = GameStage.SCATTERING;
 
     }
+    /*
+     * @EventHandler public void teleportCompleted(ScatterTeleportCompletedEvent e)
+     * { Bukkit.getPluginManager().callEvent(new GameStartEvent()); }
+     */
 
     @EventHandler
-    public void teleportCompleted(ScatterTeleportCompletedEvent e) {
-        Bukkit.getPluginManager().callEvent(new GameStartEvent());
-    }
-
-    @EventHandler
-    public void gameStartEvent(GameStartEvent e) {
+    public void gameStartEvent(ScatterTeleportCompletedEvent e) {
         // Maybe write code here to wait till tps are stables to start?
         // Also instantiate the players as UHCPlayers and not spectators here.
+        // TODO: Try to do this multi threaded.
+
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                "\n&7The scatter has succesfully finished, starting in 5 seconds!"));
-        Bukkit.getScheduler().runTaskLaterAsynchronously(UHC.getInstance(), () -> {
-            UHC.getInstance().scoreboardManager.scoreboardMap.forEach((uuid, sb) -> {
-                sb.destroy();
-            });
-            UHC.getInstance().scoreboardManager.scoreboardMap.clear();
-            Bukkit.getOnlinePlayers().parallelStream().forEach(player -> {
-                new UHCBoard(player, " &3Arcadens UHC &7(Test) ", "&7Timer: &f<timer>", "<spacer>",
-                        "&7Your kills: &f<player_kills>", "<spacer>", "&7Players Left: &f<players_left>",
-                        "&7Border: &f<border>", "<spacer>", "&3  Arcadens.net ");
-                player.setHealth(20.0D);
-                player.setFoodLevel(20);
-                player.setSaturation(20.0F);
-                UHC.getInstance().unsit(player);
-                Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
+                "\n&7The scatter has succesfully finished, starting in 30 seconds!"));
 
-                    player.setAllowFlight(false);
-                    player.setFlying(false);
-                });
-            });
+        TimerTask timerTask = new TimerTask() {
+            int left = 30;
 
-            Bukkit.getPluginManager().callEvent(new GameStartedEvent());
-            // Register ingameevents
-            UHC.getInstance().listenerManager.ingameListener = new IngameListeners(UHC.getInstance());
-            // Unregister scattering events
-            HandlerList.unregisterAll(UHC.getInstance().listenerManager.scatterListener);
-            GameStage.stage = GameStage.IN_GAME;
+            @Override
+            public void run() {
+                left--;
+                if (left == 0) {
+                    UHC.getInstance().scoreboardManager.scoreboardMap.forEach((uuid, sb) -> {
+                        sb.destroy();
+                    });
+                    UHC.getInstance().scoreboardManager.scoreboardMap.clear();
+                    Bukkit.getOnlinePlayers().parallelStream().forEach(player -> {
+                        new UHCBoard(player, " &3Arcadens UHC &7(Test) ", "&7Timer: &f<timer>", "<spacer>",
+                                "&7Your kills: &f<player_kills>", "<spacer>", "&7Players Left: &f<players_left>",
+                                "&7Border: &f<border>", "<spacer>", "&3  Arcadens.net ");
+                        player.setHealth(20.0D);
+                        player.setFoodLevel(20);
+                        player.setSaturation(20.0F);
+                        UHC.getInstance().unsit(player);
+                        Bukkit.getScheduler().runTask(UHC.getInstance(), () -> {
 
-        }, 20 * 5);
+                            player.setAllowFlight(false);
+                            player.setFlying(false);
+                        });
+                    });
+
+                    Bukkit.getPluginManager().callEvent(new GameStartedEvent());
+                    // Register ingameevents
+                    UHC.getInstance().listenerManager.ingameListener = new IngameListeners(UHC.getInstance());
+                    // Unregister scattering events
+                    HandlerList.unregisterAll(UHC.getInstance().listenerManager.scatterListener);
+                    GameStage.stage = GameStage.IN_GAME;
+                    this.cancel();
+                    return;
+                }
+                // TODO: UPDATE SCOREBOARD WITH TIME TO START.
+                switch (left) {
+                    case 10:
+                    case 5:
+                    case 4:
+                    case 3:
+                    case 2:
+                    case 20:
+                        Bukkit.broadcastMessage(
+                                ChatColor.translateAlternateColorCodes('&', "&7Starting in &3" + left + " &7seconds"));
+                        break;
+                    case 1: {
+                        Bukkit.broadcastMessage(
+                                ChatColor.translateAlternateColorCodes('&', "&7Starting in &3" + left + " &7second!"));
+                        break;
+
+                    }
+                }
+
+            }
+        };
+        UHC.getInstance().executorService.scheduleWithFixedDelay(timerTask, 1, 1, TimeUnit.SECONDS);
     }
 
     @EventHandler
@@ -280,6 +315,7 @@ public class TeamListener implements Listener {
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "\n&4Game has begun, Good luck!"));
         Bukkit.getWorld("UHC").setDifficulty(Difficulty.NORMAL);
         UHC.getInstance().locations.clear();
+        UHC.getInstance().keepLoaded.clear();
         UHC.getInstance().sitted = null;
         UHC.getInstance().gameLogicManager.gameLogicTask.runTaskTimerAsynchronously(UHC.getInstance(), 20, 20);
     }
