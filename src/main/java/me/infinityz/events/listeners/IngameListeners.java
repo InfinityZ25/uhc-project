@@ -35,6 +35,7 @@ public class IngameListeners extends SkeletonListener {
         final Player player = e.getPlayer();
         UHCPlayer uhcPlayer = instance.playerManager.getUHCPlayerFromID(player.getUniqueId());
         if (uhcPlayer != null) {
+            uhcPlayer.last_disconnect_time = null;
             if (uhcPlayer.alive && !uhcPlayer.spectator) {
                 if (uhcPlayer.entity_combatlogger_id > -1) {
                     player.getWorld().getEntities().stream().filter(it -> it.getType() == EntityType.SKELETON)
@@ -66,10 +67,11 @@ public class IngameListeners extends SkeletonListener {
                 Bukkit.getScheduler().runTaskLater(instance, () -> {
                     player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation().add(0.0, 2.0, 0.0));
                 }, 3l);
-                Bukkit.getOnlinePlayers().stream().filter(it -> it != player).forEach(all -> {
-                    all.hidePlayer(player);
-                });
             }
+        } else {
+            UHCPlayer pl = new UHCPlayer(e.getPlayer().getUniqueId());
+            pl.alive = false;
+            pl.spectator = false;
         }
         // TODO: Change this to keep players hidden.
 
@@ -118,6 +120,7 @@ public class IngameListeners extends SkeletonListener {
 
     @EventHandler
     public void onUHCDisconnect(UHCPlayerDisconnectEvent e) {
+        e.uhcPlayer.last_disconnect_time = System.currentTimeMillis();
         if (!e.uhcPlayer.alive) {
             return;
         }
@@ -137,7 +140,6 @@ public class IngameListeners extends SkeletonListener {
            * });
            */
         // TODO: FIX COMBAT LOGGER
-
     }
 
     @EventHandler
@@ -154,7 +156,7 @@ public class IngameListeners extends SkeletonListener {
         Bukkit.getScheduler().runTaskLater(instance, () -> {
             e.getEntity().spigot().respawn();
             e.getEntity().kickPlayer("You've died!");
-        }, 20L);
+        }, 15 * 20L);
     }
 
     @EventHandler

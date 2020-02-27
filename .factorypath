@@ -1,4 +1,18 @@
 <factorypath>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/projectlombok/lombok/1.18.10/lombok-1.18.10.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/jars/me/infinityz/PaperSpigot/1.8.8/PaperSpigot-1.8.8.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/jars/me/infinityz/HD/1.8.8/HD-1.8.8.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/jars/me/infinityz/HologramAPI/1.0A/HologramAPI-1.0A.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/net/milkbowl/vault/VaultAPI/1.7/VaultAPI-1.7.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/us/myles/viaversion/2.1.4-SNAPSHOT/viaversion-2.1.4-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/us/myles/viaversion-common/2.1.4-SNAPSHOT/viaversion-common-2.1.4-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/yaml/snakeyaml/1.18/snakeyaml-1.18.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/us/myles/viaversion-bukkit/2.1.4-SNAPSHOT/viaversion-bukkit-2.1.4-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/us/myles/viaversion-bungee/2.1.4-SNAPSHOT/viaversion-bungee-2.1.4-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/us/myles/viaversion-sponge/2.1.4-SNAPSHOT/viaversion-sponge-2.1.4-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/us/myles/viaversion-sponge-legacy/2.1.4-SNAPSHOT/viaversion-sponge-legacy-2.1.4-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/us/myles/viaversion-velocity/2.1.4-SNAPSHOT/viaversion-velocity-2.1.4-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/net/md-5/bungeecord-chat/1.14-SNAPSHOT/bungeecord-chat-1.14-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/com/google/code/gson/gson/2.8.0/gson-2.8.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/com/google/guava/guava/20.0/guava-20.0.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

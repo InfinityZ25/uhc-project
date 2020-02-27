@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -36,12 +35,12 @@ public class PracticeListener implements Listener {
             practiceManager.practiceHashSet.remove(player.getUniqueId());
         }
     }
-
-    @EventHandler
-    public void onss(BlockBreakEvent e) {
-        e.setCancelled(true);
-
-    }
+    /*
+     * 
+     * @EventHandler public void onss(BlockBreakEvent e) { e.setCancelled(true);
+     * 
+     * }
+     */
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
@@ -61,6 +60,7 @@ public class PracticeListener implements Listener {
         if (practiceManager.isInPractice(killer.getUniqueId())) {
             // MAKE THE REWARD SYSTEM, GIVE SOMETHING TO KILLER
             killer.sendMessage("You've killed " + player.getDisplayName() + "!");
+            killer.setHealth(20.0D);
             return;
         }
         killer.sendMessage(

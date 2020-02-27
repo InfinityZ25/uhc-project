@@ -21,6 +21,9 @@ import net.minecraft.server.v1_8_R3.PathfinderGoalSelector;
  * CombatLoggerEntity
  */
 public class CombatLoggerEntity extends EntitySkeleton {
+    // TODO: CHANGE THE COMBAT LOGGER TO SPAWN THIS ENTITY WITHOUT ALL THE OTHER
+    // METHOD AND ALSO STORE THE ENTITY ID DATA SOMEWHERE ELSE
+    // TO AVOID BUGS IN THE FUTURE
     public UUID player_Uuid;
     public PlayerInventory playerInventory;
 

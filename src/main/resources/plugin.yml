@@ -16,6 +16,8 @@ commands:
   practice:
     aliases: [arena, a, p]
     usage: "\u00A7cCorrect usage: /practice <value> <data>"
+  msg:
+    aliases: [tell, private, r, reply]
   fix:
   kt:
   heal:
@@ -23,3 +25,7 @@ commands:
   respawn:
   dq:
   findoff:
+  helpop:
+  invsee:
+  latescatter:
+softdepend: [HolographicDisplays]

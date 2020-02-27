@@ -12,10 +12,12 @@ import me.infinityz.UHC;
  */
 public class ScoreboardManager {
     public Map<UUID, ScoreboardSign> scoreboardMap;
+    public Map<UUID, FastBoard> fastBoardMap;
     public boolean global_update;
 
     public ScoreboardManager() {
         scoreboardMap = new HashMap<>();
+        fastBoardMap = new HashMap<>();
 
         this.global_update = true;
         loop();
@@ -24,12 +26,17 @@ public class ScoreboardManager {
     void loop() {
         // Doing some manual house keeping here
         UHC.getInstance().executorService.scheduleAtFixedRate(() -> {
-            Map<UUID, ScoreboardSign> map = new HashMap<>(scoreboardMap);
-            map.forEach((uuid, sb) -> {
-                sb.update();
-            });
-            map.clear();
-            map = null;
+            try {
+                Map<UUID, ScoreboardSign> map = new HashMap<>(scoreboardMap);
+                map.forEach((uuid, sb) -> {
+                    sb.update();
+                });
+                map.clear();
+                map = null;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }, 50 * 20, 50, TimeUnit.MILLISECONDS);
     }

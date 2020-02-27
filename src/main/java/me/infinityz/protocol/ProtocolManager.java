@@ -72,6 +72,9 @@ public class ProtocolManager {
                     if (soundName.get(packet).equalsIgnoreCase("dig.glass")) {
                         return null;
                     }
+                } else {
+                    UHC.getInstance().map.put(packet.getClass().getSimpleName(),
+                            UHC.getInstance().map.getOrDefault(packet.getClass().getSimpleName(), 0) + 1);
                 }
 
                 return super.onPacketOutAsync(reciever, channel, packet);

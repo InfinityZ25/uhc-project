@@ -37,7 +37,7 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
         this.helpArray = array;
     }
 
-    public String formatTime(int seconds) {
+    public static String formatTime(int seconds) {
         int hours = seconds / 3600;
         int minutes = (seconds - hours * 3600) / 60;
         int second = (seconds - hours * 3600) - minutes * 60;
@@ -147,34 +147,34 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
         }
         if (args.length == 2) {
             switch (args[0].toLowerCase()) {
-            case "horses":
-            case "horsehealing":
-            case "horsearmor":
-            case "nether":
-            case "strength_1":
-            case "strength_2":
-            case "invisibility_potion":
-            case "regeneration_potion":
-            case "speed_1":
-            case "speed_2":
-            case "natural_regeneration":
-            case "ender_pearl_damage":
-            case "poison_1":
-            case "poison_2":
-            case "absorption":
-            case "goldenheads":
-            case "headpost":
-            case "godapples": {
-                final List<String> list = new ArrayList<>(Arrays.asList(new String[] { "true", "false" }));
-                if (args[1].isEmpty()) {
+                case "horses":
+                case "horsehealing":
+                case "horsearmor":
+                case "nether":
+                case "strength_1":
+                case "strength_2":
+                case "invisibility_potion":
+                case "regeneration_potion":
+                case "speed_1":
+                case "speed_2":
+                case "natural_regeneration":
+                case "ender_pearl_damage":
+                case "poison_1":
+                case "poison_2":
+                case "absorption":
+                case "goldenheads":
+                case "headpost":
+                case "godapples": {
+                    final List<String> list = new ArrayList<>(Arrays.asList(new String[] { "true", "false" }));
+                    if (args[1].isEmpty()) {
+                        return list;
+                    }
+                    for (String string : new ArrayList<>(list)) {
+                        if (!string.toLowerCase().startsWith(args[1].toLowerCase()))
+                            list.remove(string);
+                    }
                     return list;
                 }
-                for (String string : new ArrayList<>(list)) {
-                    if (!string.toLowerCase().startsWith(args[1].toLowerCase()))
-                        list.remove(string);
-                }
-                return list;
-            }
             }
 
         }

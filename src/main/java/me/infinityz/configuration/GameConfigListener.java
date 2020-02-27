@@ -10,19 +10,21 @@ import org.bukkit.entity.Horse;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -58,32 +60,32 @@ public class GameConfigListener implements Listener {
                 || player.getItemInHand().containsEnchantment(Enchantment.SILK_TOUCH))
             return;
         switch (e.getBlock().getType()) {
-        case LEAVES_2:
-        case LEAVES: {
-            // If less than 0 use vanilla
-            if (gameConfigManager.gameConfig.apple_rate < 0)
-                return;
-            if (Math.random() <= (gameConfigManager.gameConfig.apple_rate)) {
-                e.getBlock().setType(Material.AIR);
-                e.getBlock().breakNaturally();
-                dropCenter(new ItemStack(Material.APPLE, 1 + fortune_bonus(player)), e.getBlock().getLocation());
+            case LEAVES_2:
+            case LEAVES: {
+                // If less than 0 use vanilla
+                if (gameConfigManager.gameConfig.apple_rate < 0)
+                    return;
+                if (Math.random() <= (gameConfigManager.gameConfig.apple_rate)) {
+                    e.getBlock().setType(Material.AIR);
+                    e.getBlock().breakNaturally();
+                    dropCenter(new ItemStack(Material.APPLE, 1 + fortune_bonus(player)), e.getBlock().getLocation());
+                }
+                break;
             }
-            break;
-        }
-        case GRAVEL: {
-            // If less than 0 then use vanilla
-            if (gameConfigManager.gameConfig.flint_rate < 0)
-                return;
-            if (Math.random() <= (gameConfigManager.gameConfig.flint_rate)) {
-                e.getBlock().setType(Material.AIR);
-                e.getBlock().breakNaturally();
-                dropCenter(new ItemStack(Material.FLINT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
+            case GRAVEL: {
+                // If less than 0 then use vanilla
+                if (gameConfigManager.gameConfig.flint_rate < 0)
+                    return;
+                if (Math.random() <= (gameConfigManager.gameConfig.flint_rate)) {
+                    e.getBlock().setType(Material.AIR);
+                    e.getBlock().breakNaturally();
+                    dropCenter(new ItemStack(Material.FLINT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
+                }
+                break;
             }
-            break;
-        }
-        default: {
-            break;
-        }
+            default: {
+                break;
+            }
         }
     }
 
@@ -96,6 +98,14 @@ public class GameConfigListener implements Listener {
             e.setCancelled(true);
             e.getBlock().setType(Material.AIR);
             dropCenter(new ItemStack(Material.APPLE, 1), e.getBlock().getLocation());
+        }
+
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void name(PortalCreateEvent e) {
+        if (!gameConfigManager.gameConfig.nether) {
+            e.setCancelled(true);
         }
 
     }
@@ -238,21 +248,22 @@ public class GameConfigListener implements Listener {
                 if (stack == null || stack.getType() == Material.AIR)
                     continue;
                 switch (stack.getDurability()) {
-                case 8230:
-                case 8262:
-                case 16422:
-                case 16454:
-                case 8238:
-                case 8270:
-                case 16430:
-                case 16462: {
-                    e.getContents().getViewers().forEach(it -> it.sendMessage("Invisibility potions are disabled!"));
-                    e.setCancelled(true);
-                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
-                    e.getContents().setIngredient(null);
-                    found = true;
-                    return;
-                }
+                    case 8230:
+                    case 8262:
+                    case 16422:
+                    case 16454:
+                    case 8238:
+                    case 8270:
+                    case 16430:
+                    case 16462: {
+                        e.getContents().getViewers()
+                                .forEach(it -> it.sendMessage("Invisibility potions are disabled!"));
+                        e.setCancelled(true);
+                        dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                        e.getContents().setIngredient(null);
+                        found = true;
+                        return;
+                    }
                 }
             }
             if (found)
@@ -272,19 +283,19 @@ public class GameConfigListener implements Listener {
                 if (stack == null || stack.getType() == Material.AIR)
                     continue;
                 switch (stack.getDurability()) {
-                case 8194:
-                case 8226:
-                case 8258:
-                case 16386:
-                case 16418:
-                case 16450: {
-                    e.getContents().getViewers().forEach(it -> it.sendMessage("Speed II potions are disabled!"));
-                    e.setCancelled(true);
-                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
-                    e.getContents().setIngredient(null);
-                    found = true;
-                    return;
-                }
+                    case 8194:
+                    case 8226:
+                    case 8258:
+                    case 16386:
+                    case 16418:
+                    case 16450: {
+                        e.getContents().getViewers().forEach(it -> it.sendMessage("Speed II potions are disabled!"));
+                        e.setCancelled(true);
+                        dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                        e.getContents().setIngredient(null);
+                        found = true;
+                        return;
+                    }
                 }
             }
             if (found)
@@ -305,19 +316,19 @@ public class GameConfigListener implements Listener {
                 if (stack == null || stack.getType() == Material.AIR)
                     continue;
                 switch (stack.getDurability()) {
-                case 8201:
-                case 8233:
-                case 8265:
-                case 16393:
-                case 16425:
-                case 16457: {
-                    e.getContents().getViewers().forEach(it -> it.sendMessage("Strength II potions are disabled!"));
-                    e.setCancelled(true);
-                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
-                    e.getContents().setIngredient(null);
-                    found = true;
-                    return;
-                }
+                    case 8201:
+                    case 8233:
+                    case 8265:
+                    case 16393:
+                    case 16425:
+                    case 16457: {
+                        e.getContents().getViewers().forEach(it -> it.sendMessage("Strength II potions are disabled!"));
+                        e.setCancelled(true);
+                        dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                        e.getContents().setIngredient(null);
+                        found = true;
+                        return;
+                    }
                 }
             }
             if (found)
@@ -338,17 +349,17 @@ public class GameConfigListener implements Listener {
                 if (stack == null || stack.getType() == Material.AIR)
                     continue;
                 switch (stack.getDurability()) {
-                case 8196:
-                case 8260:
-                case 16388:
-                case 16452: {
-                    e.getContents().getViewers().forEach(it -> it.sendMessage("Poison II potions are disabled!"));
-                    e.setCancelled(true);
-                    dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
-                    e.getContents().setIngredient(null);
-                    found = true;
-                    return;
-                }
+                    case 8196:
+                    case 8260:
+                    case 16388:
+                    case 16452: {
+                        e.getContents().getViewers().forEach(it -> it.sendMessage("Poison II potions are disabled!"));
+                        e.setCancelled(true);
+                        dropCenter(e.getContents().getIngredient(), e.getBlock().getLocation());
+                        e.getContents().setIngredient(null);
+                        found = true;
+                        return;
+                    }
                 }
             }
             if (found)

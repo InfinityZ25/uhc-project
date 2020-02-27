@@ -35,7 +35,6 @@ public class BedrockBorderTask extends BukkitRunnable {
 
         long start = System.currentTimeMillis();
 
-        Bukkit.broadcastMessage("Starting to build the border!");
         for (int i = 1; i <= size * 2; i++) {
             for (int j = world.getHighestBlockYAt(size - i, size) + wall_size; j > 0; j--) {
                 world.getBlockAt(size - i, j, size).setType(Material.BEDROCK);
@@ -60,7 +59,6 @@ public class BedrockBorderTask extends BukkitRunnable {
             }
         }
         long end = System.currentTimeMillis();
-        Bukkit.broadcastMessage("It took " + (end - start) + "ms!");
     }
 
     @Override
@@ -73,14 +71,14 @@ public class BedrockBorderTask extends BukkitRunnable {
                 if (milliseconds + maxtick <= System.currentTimeMillis()) {
                     break;
                 }
-                for (int j = world.getHighestBlockYAt(size - northInt, size) + height; j > 0; j--) {
-                    world.getBlockAt(size - northInt, j, size).setType(Material.BEDROCK);
+                int highest = world.getHighestBlockYAt(size - northInt, size);
+                for (int j = height; j > -1; j--) {
+                    world.getBlockAt(size - northInt, highest + j, size).setType(Material.BEDROCK);
                 }
             }
             // Confirm that the loop is done and readt to move to the next side of the wall.
             if (northInt > (size * 2)) {
                 north = true;
-                Bukkit.broadcastMessage("out");
             } else {
                 return;
             }
@@ -90,14 +88,14 @@ public class BedrockBorderTask extends BukkitRunnable {
                 if (milliseconds + maxtick <= System.currentTimeMillis()) {
                     break;
                 }
-                for (int j = world.getHighestBlockYAt(size, size - southInt) + height; j > 0; j--) {
-                    world.getBlockAt(size, j, size - southInt).setType(Material.BEDROCK);
+                int highest = world.getHighestBlockYAt(size - northInt, size);
+                for (int j = height; j > -1; j--) {
+                    world.getBlockAt(size, highest, size - southInt).setType(Material.BEDROCK);
                 }
             }
 
             if (southInt > (size * 2)) {
                 south = true;
-                Bukkit.broadcastMessage("out2");
             } else {
                 return;
             }
@@ -107,14 +105,14 @@ public class BedrockBorderTask extends BukkitRunnable {
                 if (milliseconds + maxtick <= System.currentTimeMillis()) {
                     break;
                 }
-                for (int j = world.getHighestBlockYAt(size - westInt, -size) + height; j > 0; j--) {
-                    world.getBlockAt(size - westInt, j, -size).setType(Material.BEDROCK);
+                int highest = world.getHighestBlockYAt(size - northInt, size);
+                for (int j = height; j > -1; j--) {
+                    world.getBlockAt(size - westInt, highest, -size).setType(Material.BEDROCK);
                 }
             }
 
             if (westInt > (size * 2)) {
                 west = true;
-                Bukkit.broadcastMessage("out3");
             } else {
                 return;
             }
@@ -127,20 +125,18 @@ public class BedrockBorderTask extends BukkitRunnable {
                 if (eastInt == size * 2) {
                     continue;
                 }
-                for (int j = world.getHighestBlockYAt(-size, eastInt - size) + height; j > 0; j--) {
-                    world.getBlockAt(-size, j, eastInt - size).setType(Material.BEDROCK);
+                int highest = world.getHighestBlockYAt(size - northInt, size);
+                for (int j = height; j > -1; j--) {
+                    world.getBlockAt(-size, highest, eastInt - size).setType(Material.BEDROCK);
                 }
             }
 
             if (eastInt > (size * 2)) {
                 east = true;
-                Bukkit.broadcastMessage("out4");
             } else {
                 return;
             }
         }
-        Bukkit.broadcastMessage(
-                "It took " + (System.currentTimeMillis() - start) + "ms to build a " + size + "x" + size + " border!");
         this.cancel();
     }
 }

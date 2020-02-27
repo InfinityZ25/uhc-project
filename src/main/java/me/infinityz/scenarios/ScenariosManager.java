@@ -18,6 +18,7 @@ public class ScenariosManager {
         scenarioMap = new HashMap<>();
         scenarioMap.putIfAbsent("cutclean", new Cutclean());
         scenarioMap.putIfAbsent("hasteyboys", new HasteyBoys());
+        scenarioMap.putIfAbsent("timber", new Timber());
         scenarioMap.putIfAbsent("fireless", new Fireless());
         scenarioMap.putIfAbsent("timebomb", new Timebomb());
         scenarioMap.putIfAbsent("nofall", new NoFall());

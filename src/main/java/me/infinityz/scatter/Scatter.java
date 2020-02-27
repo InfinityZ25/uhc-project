@@ -93,7 +93,7 @@ public class Scatter extends BukkitRunnable {
     public Location findValidLocation(final World world, final int radius, final int distance_limit) {
         final Location loc = findScatterLocation(world, radius);
         // Assert that the location found is valid and don't stop looping until found.
-        if (!validateLocation(loc, distance_limit)) {
+        if (!validateLocation(loc, distance_limit) || loc.getBlockY() < 60) {
             findValidLocation(world, radius, distance_limit);
         }
         // If this point is reached, it means the location returned is valid.

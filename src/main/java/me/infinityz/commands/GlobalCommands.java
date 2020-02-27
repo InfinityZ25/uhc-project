@@ -1,10 +1,13 @@
 package me.infinityz.commands;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -13,17 +16,21 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
-
 import me.infinityz.UHC;
 import me.infinityz.UHC.GameStage;
 import me.infinityz.border.BedrockBorderTask;
+import me.infinityz.configuration.GameConfigCMD;
 import me.infinityz.logic.PreGameStartEvent;
 import me.infinityz.player.UHCPlayer;
 import me.infinityz.protocol.Reflection;
@@ -69,6 +76,21 @@ public class GlobalCommands implements CommandExecutor {
                     final BedrockBorderTask borderTask = new BedrockBorderTask(player.getLocation().getWorld(), i,
                             wall_size, Integer.parseInt(args[3]));
                     borderTask.runTaskTimer(instance, 0, Integer.parseInt(args[4]));
+                    break;
+                }
+                case "packets": {
+                    instance.map.forEach((pack, in) -> {
+                        sender.sendMessage(pack + ": " + in);
+                    });
+                    break;
+                }
+                case "pc": {
+                    instance.map.clear();
+
+                    break;
+                }
+                case "holo": {
+                    instance.createHolo(player, "");
                     break;
                 }
                 case "bedrock": {
@@ -335,6 +357,47 @@ public class GlobalCommands implements CommandExecutor {
 
             return false;
         }
+        if (cmd.getName().equalsIgnoreCase("msg")) {
+            if (args.length < 1) {
+                sender.sendMessage("Correct usage: /msg <Player> [Message]");
+                return true;
+            }
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target != null && target.isOnline()) {
+                if (target.getName().equalsIgnoreCase(sender.getName())) {
+                    sender.sendMessage(ChatColor.RED + "Can't message yourself!");
+                    return true;
+                }
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1; i < args.length; i++) {
+                    sb.append(args[i]).append(" ");
+                }
+                target.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&b<player>&7->&bMe&7] &b<message>"
+                        .replace("<player>", sender.getName()).replace("<message>", sb.toString().trim())));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&bMe&7->&b<player>&7] &b<message>"
+                        .replace("<player>", sender.getName()).replace("<message>", sb.toString().trim())));
+                return true;
+
+            }
+            sender.sendMessage(ChatColor.RED + args[0] + " is not online!");
+
+            return true;
+        }
+        if (cmd.getName().equalsIgnoreCase("helpop")) {
+            if (args.length > 0) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < args.length; i++) {
+                    sb.append(args[i]).append(" ");
+                }
+
+                Bukkit.broadcast(ChatColor.DARK_RED + "[Helpop] " + ChatColor.WHITE + sender.getName() + ": "
+                        + ChatColor.GRAY + sb.toString().trim(), "uhc.helpop.recieve");
+                sender.sendMessage(ChatColor.GREEN + "Your message was sent!");
+                return true;
+            }
+            sender.sendMessage("Correct usage: /helpop <Message>");
+            return true;
+        }
         if (cmd.getName().equalsIgnoreCase("respawn")) {
             if (!sender.hasPermission("uhc.respawn")) {
                 return true;
@@ -376,7 +439,42 @@ public class GlobalCommands implements CommandExecutor {
                 sender.sendMessage(args[1] + " has not played in this game!");
                 return true;
             }
+            return true;
+        }
+        if (cmd.getName().equalsIgnoreCase("latescatter")) {
+            if (!sender.hasPermission("uhc.dq")) {
+                return true;
+            }
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target != null && target.isOnline()) {
 
+            }
+            return true;
+        }
+        if (cmd.getName().equalsIgnoreCase("invsee")) {
+            if (!sender.hasPermission("uhc.dq")) {
+                return true;
+            }
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target != null && target.isOnline()) {
+                Inventory inv = Bukkit.createInventory(null, 9 * 5, ChatColor.GOLD + target.getName() + "'s inventory");
+                inv.setContents(target.getInventory().getContents());
+                for (int i = 0; i < 4; i++) {
+                    inv.setItem(36 + i, target.getInventory().getArmorContents()[i]);
+                }
+                ItemStack i = new ItemStack(Material.NETHER_STAR);
+                ItemMeta meta = i.getItemMeta();
+                meta.setDisplayName("Potion Effects:");
+                List<String> s = new ArrayList<>();
+                target.getActivePotionEffects().forEach(pf -> {
+                    s.add(pf.getType().getName() + ": " + GameConfigCMD.formatTime(pf.getDuration() / 20));
+                });
+                meta.setLore(s);
+                i.setItemMeta(meta);
+                inv.setItem(41, i);
+                Player player = (Player) sender;
+                player.openInventory(inv);
+            }
             return true;
         }
         if (cmd.getName().equalsIgnoreCase("dq")) {
@@ -454,10 +552,10 @@ public class GlobalCommands implements CommandExecutor {
         if (cmd.getName().equalsIgnoreCase("fix")) {
             final Player player = (Player) sender;
             final Location pl = player.getLocation();
-            player.teleport(Bukkit.getWorld("Practice").getSpawnLocation());
+            player.teleport(pl);
             Bukkit.getScheduler().runTaskLater(instance, () -> {
                 player.teleport(pl);
-            }, 2L);
+            }, 3L);
 
             return true;
         }

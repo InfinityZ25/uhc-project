@@ -14,11 +14,11 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 
 import me.infinityz.UHC;
-import me.infinityz.scoreboard.LobbyBoard;
-import me.infinityz.scoreboard.ScoreboardSign;
-import me.infinityz.teams.objects.Team;
+import me.infinityz.scoreboard.FastBoard;
+import me.infinityz.scoreboard.FastLobbyBoard;
 import net.md_5.bungee.api.ChatColor;
 
 /**
@@ -42,7 +42,10 @@ public class LobbyListeners extends SkeletonListener {
         final Player player = e.getPlayer();
         // Teleport player to spawn and send motd.
         player.teleport(spawnLocation);
-        Bukkit.getScheduler().runTaskLater(instance, () -> player.teleport(spawnLocation), 10L);
+        Bukkit.getScheduler().runTaskLater(instance, () -> {
+            if (!player.getWorld().getName().equalsIgnoreCase(this.spawnLocation.getWorld().getName()))
+                player.teleport(spawnLocation);
+        }, 10L);
         player.sendMessage(joinMessage);
         // Reset player's inventory, health, effects, and hunger.
         player.setHealth(20D);
@@ -53,36 +56,28 @@ public class LobbyListeners extends SkeletonListener {
         player.getActivePotionEffects().forEach(effect -> {
             player.removePotionEffect(effect.getType());
         });
-        // Start sending the scoreboard in a asynchronus fashion to prevent overload.
-        Bukkit.getScheduler().runTaskAsynchronously(UHC.getInstance(), () -> {
-            Bukkit.getOnlinePlayers().stream().filter(it -> player != it).forEach(it -> {
-                ScoreboardSign sign = instance.scoreboardManager.scoreboardMap.get(it.getUniqueId());
-                if (sign != null) {
-                    sign.updatePlayerOrder(player);
-                    sign.getPlayer().sendPacket(ScoreboardSign.add3Remove4(3, player.getName(), "1111"));
-                }
-            });
 
-            Team team = instance.teamManager.findPlayersTeam(player.getUniqueId());
-            if (team != null) {
-                team.team_members.forEach(it -> {
-                    Player pl = Bukkit.getPlayer(it);
-                    if (pl != null && pl.isOnline()) {
-                        if (pl.getUniqueId() != player.getUniqueId()) {
-                            ScoreboardSign sign = instance.scoreboardManager.scoreboardMap.get(pl.getUniqueId());
-                            if (sign != null) {
-                                sign.getPlayer().sendPacket(ScoreboardSign.add3Remove4(3, player.getName(), "0001"));
-                                sign.updatePlayerOrder(pl);
-                            }
-                        }
-                    }
-                });
-            }
+        FastBoard fb = new FastLobbyBoard(player, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>",
+                "&7Players: &f<players>", "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>", "&3  Arcadens.net ");
+        try {
+            fb.createTeam("00", ChatColor.translateAlternateColorCodes('&', "&a"), "");
+            fb.createTeam("01", ChatColor.translateAlternateColorCodes('&', "&c"), "");
+            fb.addOrRemovePlayerFromTeam(player.getName(), "00", 3);
 
-        });
+        } catch (Exception e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
-        new LobbyBoard(player, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>", "&7Players: &f<players>",
-                "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>", "&3  Arcadens.net ");
+    }
+
+    @EventHandler
+    public void move(PlayerMoveEvent e) {
+        if (e.getTo().getWorld() != spawnLocation.getWorld())
+            return;
+        if (e.getTo().getBlockY() < 40) {
+            e.getPlayer().teleport(spawnLocation);
+        }
     }
 
     @EventHandler

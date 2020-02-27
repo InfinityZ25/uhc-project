@@ -11,20 +11,18 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -49,23 +47,25 @@ import me.infinityz.scoreboard.UHCBoard;
  * GlobalListeners
  */
 public class GlobalListeners extends SkeletonListener {
-    public Map<UUID, Long> time;
     public int chat_delay_ms;
 
     @SuppressWarnings("all")
     public GlobalListeners(final UHC instance) {
         super(instance);
-        time = new HashMap<>();
-        chat_delay_ms = 3000;
-        // new BedrockGlassBorder(instance).runTaskTimerAsynchronously(instance, 0, 5);
-        instance.executorService.scheduleAtFixedRate(() -> {
-            final int new_aliv = UHC.getInstance().playerManager.getAlivePlayers();
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(instance, () -> {
             final boolean isteam = UHC.getInstance().teamManager.team_enabled;
-            final int teams_left = UHC.getInstance().playerManager.getTeamsLeft();
-            instance.playerManager.players.values().stream().filter(it -> it.last_disconnect_time > 0 && it.alive)
-                    .forEach(it -> {
-                        if (it.last_disconnect_time + (1000 * 60) >= System.currentTimeMillis()) {
-                            // TODO:BROADCAST THE NAME OF THE DEAD PLAYER
+            instance.playerManager.players.values().forEach(all -> {
+                if (all.alive && all.last_disconnect_time != null) {
+                    if (System.currentTimeMillis() >= all.last_disconnect_time + (1000 * 60 * 10)) {
+                        Player pl = Bukkit.getPlayer(all.uuid);
+                        if (pl == null || !pl.isOnline()) {
+                            all.alive = false;
+                            all.died_time = System.currentTimeMillis();
+                            final int new_aliv = UHC.getInstance().playerManager.getAlivePlayers();
+                            final int teams_left = UHC.getInstance().playerManager.getTeamsLeft();
+                            OfflinePlayer of = Bukkit.getOfflinePlayer(all.uuid);
+                            Bukkit.broadcastMessage(of.getName() + " has died offline!");
                             instance.scoreboardManager.scoreboardMap.values().forEach(sb -> {
                                 if (sb instanceof UHCBoard) {
                                     final UHCBoard uhcb = (UHCBoard) sb;
@@ -75,11 +75,13 @@ public class GlobalListeners extends SkeletonListener {
                                     }
                                 }
                             });
-
+                            // TODO: Call the even win?
                         }
-                    });
+                    }
+                }
+            });
 
-        }, 0, 30, TimeUnit.SECONDS);
+        }, 20 * 30, 20 * 60);
 
         instance.executorService.scheduleAtFixedRate(new TimerTask() {
             Map<UUID, Collection<Vector>> map = new HashMap<>();
@@ -156,44 +158,40 @@ public class GlobalListeners extends SkeletonListener {
         if (instance.keepLoaded.contains(e.getChunk())) {
             e.setCancelled(true);
         }
-    }
+    }/*
+      * 
+      * @EventHandler public void onBreak(final BlockBreakEvent e) { if
+      * (e.getPlayer().getGameMode() == GameMode.CREATIVE || e.isCancelled()) return;
+      * if (e.getBlock().getType().equals(Material.STONE)) {
+      * e.getBlock().setType(Material.AIR); unbreaking_damage(e.getPlayer());
+      * e.getBlock().getLocation().getWorld() .dropItem(new
+      * Location(e.getBlock().getWorld(), e.getBlock().getX() + 0.5,
+      * e.getBlock().getY() + 0.2, e.getBlock().getZ() + 0.5), new
+      * ItemStack(Material.COBBLESTONE)) .setVelocity(new Vector(0.0, 0.2, 0.0)); } }
+      */
 
-    @EventHandler
-    public void onBreak(final BlockBreakEvent e) {
-        if (e.getPlayer().getGameMode() == GameMode.CREATIVE)
+    void unbreaking_damage(Player player) {
+        ItemStack hand = player.getItemInHand();
+        if (hand == null || hand.getType() == Material.AIR || !isTool(hand.getType()))
             return;
-        if (e.getBlock().getType().equals(Material.STONE)) {
-            e.getBlock().setType(Material.AIR);
-            e.getBlock().getLocation().getWorld()
-                    .dropItem(new Location(e.getBlock().getWorld(), e.getBlock().getX() + 0.5,
-                            e.getBlock().getY() + 0.2, e.getBlock().getZ() + 0.5), new ItemStack(Material.COBBLESTONE))
-                    .setVelocity(new Vector(0.0, 0.2, 0.0));
-        }
-    }
-
-    @EventHandler
-    public void onCommandPreProcess(PlayerCommandPreprocessEvent e) {
-        if (e.getPlayer().hasPermission("uhc.override"))
+        if (!hand.containsEnchantment(Enchantment.DURABILITY)) {
+            hand.setDurability((short) (hand.getDurability() + 1));
+            player.updateInventory();
             return;
-        if (e.getMessage().startsWith("/me") || e.getMessage().startsWith("/bukkit")
-                || e.getMessage().startsWith("/bukkit") || e.getMessage().startsWith("/minecraft")) {
-            e.setCancelled(true);
         }
+        int unbreaking_level = hand.getEnchantmentLevel(Enchantment.DURABILITY);
+        double chance = ((100 / (unbreaking_level + 1)) / 100.0D);
+        int damage = Math.random() <= chance ? 1 : 0;
+        hand.setDurability((short) (hand.getDurability() + damage));
+        player.updateInventory();
     }
 
-    @EventHandler
-    public void onChat(
-            AsyncPlayerChatEvent e) {/*
-                                      * if (!instance.gameConfigManager.gameConfig.chat) { if
-                                      * (!e.getPlayer().hasPermission("uhc.chat")) { e.setCancelled(true); return; }
-                                      * } final Long t = time.get(e.getPlayer().getUniqueId()); if (t != null) {
-                                      * double rounded_time = Math.round(((System.currentTimeMillis() - t -
-                                      * chat_delay_ms) / 1000D) * 10) / 10.0; e.getPlayer().sendMessage(
-                                      * ChatColor.RED + "You have to wait at least " + Math.abs(rounded_time) +
-                                      * "s to talk again"); e.setCancelled(true); }
-                                      * time.putIfAbsent(e.getPlayer().getUniqueId(), System.currentTimeMillis());
-                                      */
+    boolean isTool(Material material) {
+        if (material.toString().contains("PICKAXE") || material.toString().contains("AXE")
+                || material.toString().contains("SPADE") || material.toString().contains("HOE"))
+            return true;
 
+        return false;
     }
 
     @EventHandler
@@ -208,6 +206,10 @@ public class GlobalListeners extends SkeletonListener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerPortal(final PlayerPortalEvent event) {
+        if (!instance.gameConfigManager.gameConfig.nether) {
+            event.setCancelled(true);
+            return;
+        }
         final TeleportCause portalType = event.getCause();
         if ((event.getTo() != null && event.getTo().getWorld().getEnvironment() == Environment.THE_END)
                 || portalType == TeleportCause.END_PORTAL) {
@@ -238,7 +240,7 @@ public class GlobalListeners extends SkeletonListener {
                 : Environment.NORMAL;
         final String toWorldName;
         if (oldEnvironment == Environment.NETHER) {
-            toWorldName = player.getWorld().getName().replaceFirst("_nether$", "");
+            toWorldName = player.getWorld().getName().replaceFirst("_nether", "");
         } else {
             toWorldName = player.getWorld().getName().concat("_nether");
         }
@@ -250,14 +252,13 @@ public class GlobalListeners extends SkeletonListener {
         if (toWorld.getEnvironment().equals(fromWorld.getEnvironment()))
             useDimension = false;
 
-        Bukkit.broadcastMessage("RUNS>??");
         final double blockRatio = useDimension ? (oldEnvironment == Environment.NETHER ? 8 : 0.125) : 1;
 
         final Location fromLocation = new Location(fromWorld, player.getLocation().getX(), player.getLocation().getY(),
                 player.getLocation().getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());
         final Location toLocation = checkOutside(new Location(toWorld, (player.getLocation().getX() * blockRatio),
                 player.getLocation().getY(), (player.getLocation().getZ() * blockRatio), player.getLocation().getYaw(),
-                player.getLocation().getPitch()), 3000);
+                player.getLocation().getPitch()), instance.gameConfigManager.gameConfig.map_size);
 
         final List<Block> blocks = findPortalBlocks(toLocation);
 
@@ -277,7 +278,6 @@ public class GlobalListeners extends SkeletonListener {
 
     @EventHandler
     public void e(final PortalCreateEvent e) {
-        Bukkit.broadcastMessage("test");
 
     }
 
@@ -352,12 +352,15 @@ public class GlobalListeners extends SkeletonListener {
 
     @EventHandler
     public void onJoin(final PlayerJoinEvent e) {
+        e.getPlayer().setNoDamageTicks(18);
         e.setJoinMessage("");
     }
 
     @EventHandler
     public void onQuit(final PlayerQuitEvent e) {
+        e.setQuitMessage("");
         instance.scoreboardManager.scoreboardMap.remove(e.getPlayer().getUniqueId());
+        instance.scoreboardManager.fastBoardMap.remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler
@@ -368,11 +371,6 @@ public class GlobalListeners extends SkeletonListener {
     @EventHandler
     public void onWeather(final ThunderChangeEvent e) {
         e.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onDisconnect(final PlayerQuitEvent e) {
-        instance.scoreboardManager.scoreboardMap.remove(e.getPlayer().getUniqueId());
     }
 
 }

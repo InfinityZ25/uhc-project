@@ -29,7 +29,7 @@ import me.infinityz.player.UHCPlayerDeathEvent;
 import me.infinityz.scatter.Teleport;
 import me.infinityz.scenarios.events.ScenarioDisabledEvent;
 import me.infinityz.scenarios.events.ScenarioEnabledEvent;
-import me.infinityz.scoreboard.LobbyBoard;
+import me.infinityz.scoreboard.FastLobbyBoard;
 import me.infinityz.scoreboard.ScoreboardSign;
 import me.infinityz.scoreboard.UHCBoard;
 import me.infinityz.teams.events.TeamDisbandedEvent;
@@ -173,7 +173,7 @@ public class TeamListener implements Listener {
                     sb.destroy();
                     UHC.getInstance().scoreboardManager.scoreboardMap.remove(all.getUniqueId());
                 }
-                new LobbyBoard(all, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>",
+                new FastLobbyBoard(all, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>",
                         "&7Players: &f<players>", "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>",
                         "&b  Arcadens.net ");
 
@@ -194,7 +194,7 @@ public class TeamListener implements Listener {
                     sb.destroy();
                     UHC.getInstance().scoreboardManager.scoreboardMap.remove(all.getUniqueId());
                 }
-                new LobbyBoard(all, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>",
+                new FastLobbyBoard(all, " &3Arcadens UHC &7(Test) ", "&7Host: &f<host>", "<spacer>",
                         "&7Players: &f<players>", "<spacer>", "&7Scenarios:", "<scenarios>", "<spacer>",
                         "&b  Arcadens.net ");
 
@@ -225,7 +225,7 @@ public class TeamListener implements Listener {
     @EventHandler
     public void onLocationsFound(ScatterLocationsFoundEvent e) {
         Bukkit.broadcastMessage("Scatter loactions have been found!");
-        new Teleport(UHC.getInstance(), UHC.getInstance().locations, 400).runTaskTimer(UHC.getInstance(), 10, 15);
+        new Teleport(UHC.getInstance(), UHC.getInstance().locations, 1000).runTaskTimer(UHC.getInstance(), 10, 15);
         World w = Bukkit.getWorld("UHC");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
                 "wb set UHC " + UHC.getInstance().gameConfigManager.gameConfig.map_size + " "

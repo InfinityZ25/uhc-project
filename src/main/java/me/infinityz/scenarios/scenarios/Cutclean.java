@@ -30,24 +30,26 @@ public class Cutclean extends IScenario {
                 || player.getItemInHand().containsEnchantment(Enchantment.SILK_TOUCH))
             return;
         switch (e.getBlock().getType()) {
-        case IRON_ORE: {
-            e.getBlock().setType(Material.AIR);
-            dropCenter(new ItemStack(Material.IRON_INGOT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
-            ((ExperienceOrb) e.getBlock().getWorld().spawn(e.getBlock().getLocation(), ExperienceOrb.class))
-                    .setExperience(2);
-            break;
-        }
-        case GOLD_ORE: {
-            e.getBlock().setType(Material.AIR);
-            dropCenter(new ItemStack(Material.GOLD_INGOT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
+            case IRON_ORE: {
+                unbreaking_damage(player);
+                e.getBlock().setType(Material.AIR);
+                dropCenter(new ItemStack(Material.IRON_INGOT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
+                ((ExperienceOrb) e.getBlock().getWorld().spawn(e.getBlock().getLocation(), ExperienceOrb.class))
+                        .setExperience(2);
+                break;
+            }
+            case GOLD_ORE: {
+                unbreaking_damage(player);
+                e.getBlock().setType(Material.AIR);
+                dropCenter(new ItemStack(Material.GOLD_INGOT, 1 + fortune_bonus(player)), e.getBlock().getLocation());
 
-            ((ExperienceOrb) e.getBlock().getWorld().spawn(e.getBlock().getLocation(), ExperienceOrb.class))
-                    .setExperience(5);
-            break;
-        }
-        default: {
-            break;
-        }
+                ((ExperienceOrb) e.getBlock().getWorld().spawn(e.getBlock().getLocation(), ExperienceOrb.class))
+                        .setExperience(5);
+                break;
+            }
+            default: {
+                break;
+            }
         }
     }
 
@@ -56,34 +58,43 @@ public class Cutclean extends IScenario {
     @EventHandler(priority = EventPriority.LOW)
     public void onEntityDeath(EntityDeathEvent e) {
         switch (e.getEntityType()) {
-        case COW: {
-            e.getDrops().forEach(it -> {
-                if (it.getType() != Material.RAW_BEEF)
-                    return;
-                it.setType(Material.COOKED_BEEF);
-            });
-            break;
+            case COW: {
+                e.getDrops().forEach(it -> {
+                    if (it.getType() != Material.RAW_BEEF)
+                        return;
+                    it.setType(Material.COOKED_BEEF);
+                });
+                break;
+            }
+            case CHICKEN: {
+                e.getDrops().forEach(it -> {
+                    if (it.getType() != Material.RAW_CHICKEN)
+                        return;
+                    it.setType(Material.COOKED_CHICKEN);
+                });
+                break;
+            }
+            case PIG: {
+                e.getDrops().forEach(it -> {
+                    if (it.getType() != Material.PORK)
+                        return;
+                    it.setType(Material.GRILLED_PORK);
+                });
+                break;
+            }
+            case SHEEP: {
+                e.getDrops().forEach(it -> {
+                    if (it.getType() != Material.MUTTON)
+                        return;
+                    it.setType(Material.COOKED_MUTTON);
+                });
+                break;
+            }
+            default: {
+                break;
+            }
         }
-        case CHICKEN: {
-            e.getDrops().forEach(it -> {
-                if (it.getType() != Material.RAW_CHICKEN)
-                    return;
-                it.setType(Material.COOKED_CHICKEN);
-            });
-            break;
-        }
-        case PIG: {
-            e.getDrops().forEach(it -> {
-                if (it.getType() != Material.PORK)
-                    return;
-                it.setType(Material.GRILLED_PORK);
-            });
-            break;
-        }
-        default: {
-            break;
-        }
-        }
+
     }
 
     // Method that ensures ores don't fly like in many other servers
@@ -106,6 +117,30 @@ public class Cutclean extends IScenario {
             bonus = 0;
         }
         return bonus;
+    }
+
+    void unbreaking_damage(Player player) {
+        ItemStack hand = player.getItemInHand();
+        if (hand == null || hand.getType() == Material.AIR || !isTool(hand.getType()))
+            return;
+        if (!hand.containsEnchantment(Enchantment.DURABILITY)) {
+            hand.setDurability((short) (hand.getDurability() + 1));
+            player.updateInventory();
+            return;
+        }
+        int unbreaking_level = hand.getEnchantmentLevel(Enchantment.DURABILITY);
+        double chance = ((100 / (unbreaking_level + 1)) / 100.0D);
+        int damage = Math.random() <= chance ? 1 : 0;
+        hand.setDurability((short) (hand.getDurability() + damage));
+        player.updateInventory();
+    }
+
+    boolean isTool(Material material) {
+        if (material.toString().contains("PICKAXE") || material.toString().contains("AXE")
+                || material.toString().contains("SPADE") || material.toString().contains("HOE"))
+            return true;
+
+        return false;
     }
 
 }

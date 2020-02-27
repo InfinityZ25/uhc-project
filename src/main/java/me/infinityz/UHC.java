@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import me.infinityz.chat.ChatManager;
 import me.infinityz.combatlogger.CombatLoggerManager;
 import me.infinityz.commands.CommandManager;
 import me.infinityz.configuration.GameConfigManager;
@@ -27,13 +28,14 @@ import me.infinityz.player.PlayerManager;
 import me.infinityz.practice.PracticeManager;
 import me.infinityz.protocol.ProtocolManager;
 import me.infinityz.scenarios.ScenariosManager;
+import me.infinityz.scoreboard.FastBoard;
 import me.infinityz.scoreboard.ScoreboardManager;
 import me.infinityz.teams.TeamManager;
 import me.infinityz.whitelist.WhitelistManager;
 import me.infinityz.whitelist.objects.NoDuplicatesList;
 import me.infinityz.world.WorldManager;
+import net.minecraft.server.v1_8_R3.EntityArmorStand;
 import net.minecraft.server.v1_8_R3.EntityBat;
-import net.minecraft.server.v1_8_R3.EntityHorse;
 import net.minecraft.server.v1_8_R3.PacketPlayOutAttachEntity;
 import net.minecraft.server.v1_8_R3.PacketPlayOutEntityDestroy;
 import net.minecraft.server.v1_8_R3.PacketPlayOutSpawnEntityLiving;
@@ -45,6 +47,7 @@ public class UHC extends JavaPlugin implements Listener {
 
     private static UHC instance;
     public ScoreboardManager scoreboardManager;
+    public ChatManager chatManager;
     public ListenerManager listenerManager;
     public CommandManager commandManager;
     public PracticeManager practiceManager;
@@ -61,6 +64,7 @@ public class UHC extends JavaPlugin implements Listener {
     public List<Location> locations;
     public HashMap<UUID, Integer> sitted;
     public ScheduledExecutorService executorService;
+    public HashMap<String, Integer> map;
 
     // TODO: MOVE
     public NoDuplicatesList<Chunk> keepLoaded = new NoDuplicatesList<>();
@@ -74,6 +78,8 @@ public class UHC extends JavaPlugin implements Listener {
         instance = this;
         GameStage.stage = GameStage.LOADING;
         this.locations = new ArrayList<>();
+        this.map = new HashMap<>();
+        this.chatManager = new ChatManager(this);
         this.executorService = Executors.newScheduledThreadPool(4);
         this.sitted = new HashMap<>();
         this.scoreboardManager = new ScoreboardManager();
@@ -125,24 +131,40 @@ public class UHC extends JavaPlugin implements Listener {
 
     public void sit(final Player p) {
         final Location l = p.getLocation();
-        final EntityHorse horse = new EntityHorse(((CraftWorld) l.getWorld()).getHandle());
-
         final EntityBat pig = new EntityBat(((CraftWorld) l.getWorld()).getHandle());
 
         pig.setLocation(l.getX(), l.getY() + 0.5, l.getZ(), 0, 0);
         pig.setInvisible(true);
         pig.setHealth(6);
 
-        horse.setLocation(l.getX(), l.getY() + 0.5, l.getZ(), 0, 0);
-        horse.setInvisible(true);
-
         final PacketPlayOutSpawnEntityLiving packet = new PacketPlayOutSpawnEntityLiving(pig);
 
         sitted.put(p.getUniqueId(), pig.getId());
 
         final PacketPlayOutAttachEntity sit = new PacketPlayOutAttachEntity(0, ((CraftPlayer) p).getHandle(), pig);
+
+        try {
+            Object entityPlayer = FastBoard.PLAYER_GET_HANDLE.invoke(p);
+            Object playerConnection = FastBoard.PLAYER_CONNECTION.get(entityPlayer);
+            FastBoard.SEND_PACKET.invoke(playerConnection, packet);
+            FastBoard.SEND_PACKET.invoke(playerConnection, sit);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void stand(Player p) {
+        final Location l = p.getLocation();
+
+        final EntityArmorStand armostand = new EntityArmorStand(((CraftWorld) l.getWorld()).getHandle());
+
+        armostand.setLocation(l.getX(), l.getY() + 0.5, l.getZ(), 0, 0);
+
+        armostand.setCustomName("ArmorStand Packet\n  test");
+
+        final PacketPlayOutSpawnEntityLiving packet = new PacketPlayOutSpawnEntityLiving(armostand);
         ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
-        ((CraftPlayer) p).getHandle().playerConnection.sendPacket(sit);
+
     }
 
     public void unsit(Player p) {
@@ -152,6 +174,21 @@ public class UHC extends JavaPlugin implements Listener {
             sitted.remove(p.getUniqueId());
 
         }
+    }
+
+    public static boolean isSignificantlySame(UUID uuid, UUID uuid2) {
+        return uuid.getMostSignificantBits() == uuid2.getMostSignificantBits();
+    }
+
+    @SuppressWarnings("all")
+    public void createHolo(Player player, String... strings) {
+        de.inventivegames.hologram.Hologram hologram = de.inventivegames.hologram.HologramAPI
+                .createHologram(player.getLocation().add(0.0, 2.0, 0.0), "I'm a hologram. Hey %%player%%!");
+        hologram.spawn();
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            stand(player);
+
+        }, 40);
     }
 
 }
