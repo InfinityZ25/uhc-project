@@ -7,7 +7,7 @@ public class GameConfig {
 
     public int map_size, final_heal_time, pvp_time, border_time, max_players;
     public double apple_rate, flint_rate;
-    public boolean nether, strength_1, strength_2, speed_1, speed_2, poison_1, poison_2, invisibility_potion,
+    public boolean nether, bedbombs, strength_1, strength_2, speed_1, speed_2, poison_1, poison_2, invisibility_potion,
             regeneration_potion, ender_pearl_damage, absorption, godapples, horses, horsehealing, horsearmor, headpost,
             goldenheads, natural_regeneration, chat;
 
@@ -22,8 +22,9 @@ public class GameConfig {
         this.strength_2 = false;
         this.invisibility_potion = true;
         this.regeneration_potion = true;
+        this.bedbombs = false;
         this.speed_1 = true;
-        this.speed_2 = false;
+        this.speed_2 = true;
         this.natural_regeneration = false;
         this.ender_pearl_damage = false;
         this.poison_1 = true;

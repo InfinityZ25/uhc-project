@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World.Environment;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -13,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -227,6 +229,15 @@ public class GameConfigListener implements Listener {
             e.getInventory().setResult(null);
             e.getViewers().get(0).sendMessage("Golden heads are disabled!");
             return;
+        }
+    }
+
+    //Bedbombs
+    @EventHandler
+    public void onBreak(BlockPlaceEvent e){
+        if(gameConfigManager.gameConfig.bedbombs)return;
+        if(e.getBlock().getType() == Material.BED && e.getBlock().getWorld().getEnvironment() == Environment.NETHER){
+            e.setCancelled(false);
         }
     }
 

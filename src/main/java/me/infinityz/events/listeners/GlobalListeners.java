@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -22,6 +23,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -158,17 +160,21 @@ public class GlobalListeners extends SkeletonListener {
         if (instance.keepLoaded.contains(e.getChunk())) {
             e.setCancelled(true);
         }
-    }/*
-      * 
-      * @EventHandler public void onBreak(final BlockBreakEvent e) { if
-      * (e.getPlayer().getGameMode() == GameMode.CREATIVE || e.isCancelled()) return;
-      * if (e.getBlock().getType().equals(Material.STONE)) {
-      * e.getBlock().setType(Material.AIR); unbreaking_damage(e.getPlayer());
-      * e.getBlock().getLocation().getWorld() .dropItem(new
-      * Location(e.getBlock().getWorld(), e.getBlock().getX() + 0.5,
-      * e.getBlock().getY() + 0.2, e.getBlock().getZ() + 0.5), new
-      * ItemStack(Material.COBBLESTONE)) .setVelocity(new Vector(0.0, 0.2, 0.0)); } }
-      */
+    }
+
+    @EventHandler
+    public void onBreak(final BlockBreakEvent e) {
+        if (e.getPlayer().getGameMode() == GameMode.CREATIVE || e.isCancelled())
+            return;
+        if (e.getBlock().getType().equals(Material.STONE)) {
+            e.getBlock().setType(Material.AIR);
+            unbreaking_damage(e.getPlayer());
+            e.getBlock().getLocation().getWorld()
+                    .dropItem(new Location(e.getBlock().getWorld(), e.getBlock().getX() + 0.5,
+                            e.getBlock().getY() + 0.2, e.getBlock().getZ() + 0.5), new ItemStack(Material.COBBLESTONE))
+                    .setVelocity(new Vector(0.0, 0.2, 0.0));
+        }
+    }
 
     void unbreaking_damage(Player player) {
         ItemStack hand = player.getItemInHand();
@@ -213,7 +219,7 @@ public class GlobalListeners extends SkeletonListener {
         final TeleportCause portalType = event.getCause();
         if ((event.getTo() != null && event.getTo().getWorld().getEnvironment() == Environment.THE_END)
                 || portalType == TeleportCause.END_PORTAL) {
-            // Handle end in the future?
+            // TODO:Handle end in the future?
         } else {
             processNetherPortalEvent(event);
         }
@@ -229,6 +235,7 @@ public class GlobalListeners extends SkeletonListener {
         Bukkit.broadcastMessage(e.getScenario().getClass().getSimpleName() + " has been disabled");
     }
 
+    //TODO: Handle nether portal creation and avoid players from abuse portal trapping.
     private void processNetherPortalEvent(final PlayerPortalEvent event) {
         final Player player = event.getPlayer();
         final World fromWorld = player.getWorld();

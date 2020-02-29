@@ -1,6 +1,5 @@
 package me.infinityz.border;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -29,36 +28,6 @@ public class BedrockBorderTask extends BukkitRunnable {
         this.eastInt = 1;
         this.maxtick = maxtick;
         this.start = System.currentTimeMillis();
-    }
-
-    void putWall(World world, int size, int wall_size) {
-
-        long start = System.currentTimeMillis();
-
-        for (int i = 1; i <= size * 2; i++) {
-            for (int j = world.getHighestBlockYAt(size - i, size) + wall_size; j > 0; j--) {
-                world.getBlockAt(size - i, j, size).setType(Material.BEDROCK);
-            }
-        }
-
-        for (int i = 0; i <= size * 2; i++) {
-            for (int j = world.getHighestBlockYAt(size, size - i) + wall_size; j > 0; j--) {
-                world.getBlockAt(size, j, size - i).setType(Material.BEDROCK);
-            }
-        }
-
-        for (int i = 0; i <= (size * 2) + 1; i++) {
-            for (int j = world.getHighestBlockYAt(size - i, -size - 1) + wall_size; j > 0; j--) {
-                world.getBlockAt(size - i, j, -size - 1).setType(Material.BEDROCK);
-            }
-        }
-
-        for (int i = 0; i <= size * 2; i++) {
-            for (int j = world.getHighestBlockYAt(-size - 1, size - i) + wall_size; j > 0; j--) {
-                world.getBlockAt(-size - 1, j, size - i).setType(Material.BEDROCK);
-            }
-        }
-        long end = System.currentTimeMillis();
     }
 
     @Override
