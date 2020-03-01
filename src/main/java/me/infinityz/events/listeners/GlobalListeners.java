@@ -77,7 +77,7 @@ public class GlobalListeners extends SkeletonListener {
                                     }
                                 }
                             });
-                            // TODO: Call the even win?
+                            // TODO: Call the event win?
                         }
                     }
                 }

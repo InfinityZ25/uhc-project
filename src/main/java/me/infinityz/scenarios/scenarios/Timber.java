@@ -30,6 +30,7 @@ public class Timber extends IScenario {
         item.setVelocity(new Vector(0.0, 0.2, 0.0));
     }
 
+    @SuppressWarnings("all")
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
