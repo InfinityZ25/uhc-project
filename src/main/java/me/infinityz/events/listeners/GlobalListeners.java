@@ -267,25 +267,29 @@ public class GlobalListeners extends SkeletonListener {
                 player.getLocation().getY(), (player.getLocation().getZ() * blockRatio), player.getLocation().getYaw(),
                 player.getLocation().getPitch()), instance.gameConfigManager.gameConfig.map_size);
 
-        final List<Block> blocks = findPortalBlocks(toLocation);
+        event.setTo(toLocation);
+        event.setFrom(fromLocation);
+        event.useTravelAgent(true);
 
-        blocks.forEach(block -> {
-            for (final BlockFace face : BlockFace.values()) {
+        Location portalLocation = event.getPortalTravelAgent().findPortal(toLocation);
+        final List<Block> blocks = findPortalBlocks(portalLocation != null ? portalLocation : toLocation);
+
+        for (final BlockFace face : BlockFace.values()) {
+            for(final Block block : blocks){
                 final Block gb = block.getRelative(face);
                 if (gb.getType() != Material.OBSIDIAN && gb.getType() != Material.PORTAL
                         && gb.getType() != Material.AIR) {
                     gb.setType(Material.AIR);
                 }
+                for (int i = 1; i <20; i++) {
+                    Block b2 = gb.getWorld().getBlockAt(gb.getX(), gb.getY()+i, gb.getZ());
+                    if(b2.getType() == Material.STATIONARY_LAVA |b2.getType() == Material.LAVA){
+                        b2.setType(Material.AIR);
+                    }
+                    
+                }
             }
-        });
-        event.setTo(toLocation);
-        event.setFrom(fromLocation);
-        event.useTravelAgent(true);
-    }
-
-    @EventHandler
-    public void e(final PortalCreateEvent e) {
-
+        }
     }
 
     List<Block> findPortalBlocks(final Location loc) {
@@ -294,10 +298,10 @@ public class GlobalListeners extends SkeletonListener {
 
     List<Block> findPortalBlocks(final Block loc) {
         final List<Block> lBlocks = new ArrayList<>();
-        final int radius = 15;
-        for (int x = loc.getX() - radius; x <= loc.getX() + radius; x++) {
+        final int radius = 6;
+        for (int x = loc.getX() - 4; x <= loc.getX() + 4; x++) {
             for (int y = loc.getY() - radius; y <= loc.getY() + radius; y++) {
-                for (int z = loc.getZ() - radius; z <= loc.getZ() + radius; z++) {
+                for (int z = loc.getZ() - 4; z <= loc.getZ() + 4; z++) {
                     final Block b = loc.getWorld().getBlockAt(x, y, z);
                     if (b.getType() == Material.OBSIDIAN || b.getType() == Material.PORTAL) {
                         lBlocks.add(b);
