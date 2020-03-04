@@ -32,6 +32,15 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
             player.teleport(loc.getWorld().getHighestBlockAt(loc).getLocation().add(0.0, 2.0, 0.0));
         });
     }
+    boolean outsideBorder(Player pl, int border_size){
+        Location loc = pl.getLocation();
+        double x = Math.abs(loc.getX());
+        double z = Math.abs(loc.getZ());
+        if(x > border_size || z > border_size){
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public void run() {
@@ -41,10 +50,13 @@ public class BorderShrinkTaskSeconds extends BukkitRunnable {
                     "&6[WorldBorder] The world was shrunk to &f" + to_shrink_size + "x" + to_shrink_size + "!"));
             if (to_shrink_size == 500) {
                 UHC.getInstance().gameConfigManager.gameConfig.nether = false;
-                Bukkit.getOnlinePlayers().stream().filter(it -> it.getWorld().getEnvironment() == Environment.NETHER)
-                        .forEach(all -> {
-                            randomTp(all, 498);
-                        });
+                Bukkit.getOnlinePlayers().stream().forEach(all -> {
+                    if (all.getWorld().getEnvironment() == Environment.NETHER) {
+                        randomTp(all, 498);
+                    }else if(outsideBorder(all, 500)){
+                        randomTp(all, 498);
+                    }
+                });
             }
             new BedrockBorderTask(Bukkit.getWorld("UHC"), to_shrink_size, 4, 50).runTaskTimer(UHC.getInstance(), 0, 5);
             UHC.getInstance().gameConfigManager.gameConfig.map_size = to_shrink_size;

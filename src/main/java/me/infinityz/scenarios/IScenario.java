@@ -16,6 +16,7 @@ public class IScenario implements Listener{
      */
 
      public boolean enabled = false;
+     public String description = "This is the default scenario description\n Each scenario should have a different one.";
 
      public IScenario(){
          registerScenario();

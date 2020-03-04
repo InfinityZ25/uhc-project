@@ -26,6 +26,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import me.infinityz.UHC;
 import me.infinityz.UHC.GameStage;
@@ -158,6 +160,9 @@ public class GlobalCommands implements CommandExecutor {
                     // Whitelist everyone and clear the whitelistors
                     instance.whitelistManager.whitelist_enabled = true;
                     Bukkit.getOnlinePlayers().stream().forEach(all -> {
+                        all.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20*999999, 3));
+                        all.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20*999999, 10));
+                        all.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 20*999999, 10));
                         instance.whitelistManager.whitelist.add(all.getUniqueId());
                     });
                     instance.whitelistManager.whitelistorPlayers.clear();
@@ -375,7 +380,7 @@ public class GlobalCommands implements CommandExecutor {
                 target.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&b<player>&7->&bMe&7] &b<message>"
                         .replace("<player>", sender.getName()).replace("<message>", sb.toString().trim())));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&bMe&7->&b<player>&7] &b<message>"
-                        .replace("<player>", sender.getName()).replace("<message>", sb.toString().trim())));
+                        .replace("<player>", target.getName()).replace("<message>", sb.toString().trim())));
                 return true;
 
             }

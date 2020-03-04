@@ -10,9 +10,15 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import me.infinityz.UHC;
+import me.infinityz.scenarios.IScenario;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.HoverEvent.Action;
 
 /**
  * GameConfigCMD
@@ -56,51 +62,62 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
                 formattedTime += "0";
             formattedTime += second;
         } else {
-            if (minutes < 10)
-                formattedTime += "0";
-            formattedTime += minutes + ":";
-
-            if (second < 10)
-                formattedTime += "0";
-            formattedTime += second;
+            formattedTime += minutes + "min";
+            if (second == 0) {
+                return formattedTime;
+            }
+            formattedTime += second + "s";
         }
 
         return formattedTime;
+    }
+
+    String onGreenOffRed(boolean bol) {
+        if (bol) {
+            return ChatColor.GREEN + "ON";
+        }
+        return ChatColor.RED + "OFF";
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             GameConfig config = GameConfigManager.gameConfig;
-            sender.sendMessage(" ");
-            sender.sendMessage(" ");
-            sender.sendMessage(
-                    ChatColor.GRAY + "Host: " + ChatColor.WHITE + "" + GameConfigManager.last_known_host_name);
-            sender.sendMessage(
-                    ChatColor.GRAY + "Map Size: " + ChatColor.WHITE + "" + config.map_size + "x" + config.map_size);
-            sender.sendMessage(ChatColor.GRAY + "Game Type: " + ChatColor.WHITE
+            String str = "\n\n\n&7----------------------------\n&3UHC Configuration\n \n&b"
                     + (UHC.getInstance().teamManager.team_enabled ? "To" + UHC.getInstance().teamManager.team_size
-                            : "FFA"));
-            sender.sendMessage(ChatColor.GRAY + "Scenarios: " + ChatColor.WHITE + ""
-                    + (UHC.getInstance().scenariosManager.getActiveScenarios().isEmpty() ? "Vanilla"
-                            : UHC.getInstance().scenariosManager.getActiveScenariosNames().toString()));
-            sender.sendMessage(
-                    ChatColor.GRAY + "Border Shrink Time: " + ChatColor.WHITE + formatTime(config.border_time));
-            sender.sendMessage(
-                    ChatColor.GRAY + "Final heal Time: " + ChatColor.WHITE + formatTime(config.final_heal_time));
-            sender.sendMessage(ChatColor.GRAY + "Pvp Time: " + ChatColor.WHITE + formatTime(config.pvp_time));
-            sender.sendMessage(ChatColor.GRAY + "Apple Rate: " + ChatColor.WHITE + (config.apple_rate * 100D));
-            sender.sendMessage(ChatColor.GRAY + "Flint Rate: " + ChatColor.WHITE + (config.flint_rate * 100D));
-            sender.sendMessage(ChatColor.GRAY + "Absorption: " + ChatColor.WHITE + config.absorption);
-            sender.sendMessage(ChatColor.GRAY + "God Apples: " + ChatColor.WHITE + config.godapples);
-            sender.sendMessage(ChatColor.GRAY + "Pearl Damage: " + ChatColor.WHITE + config.ender_pearl_damage);
-            sender.sendMessage(ChatColor.GRAY + "Nether: " + ChatColor.WHITE + " true");
-            sender.sendMessage(ChatColor.GRAY + "Strength I: " + ChatColor.WHITE + config.strength_1);
-            sender.sendMessage(ChatColor.GRAY + "Strength II: " + ChatColor.WHITE + config.strength_2);
-            sender.sendMessage(ChatColor.GRAY + "Speed I: " + ChatColor.WHITE + config.speed_1);
-            sender.sendMessage(ChatColor.GRAY + "Speed II: " + ChatColor.WHITE + config.speed_2);
-            sender.sendMessage(" ");
-            sender.sendMessage(" ");
+                            : "FFA")
+                    + " ";
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                TextComponent text = new TextComponent(ChatColor.translateAlternateColorCodes('&', str));
+                List<IScenario> activeScenarios = UHC.getInstance().scenariosManager.getActiveScenarios();
+                if (activeScenarios.isEmpty()) {
+                    text.addExtra("Vanilla");
+                } else {
+                    while (activeScenarios.iterator().hasNext()) {
+                        IScenario scenario = activeScenarios.iterator().next();
+                        TextComponent t = new TextComponent(scenario.getClass().getSimpleName()
+                                + (activeScenarios.iterator().hasNext() ? ", " : "."));
+                        t.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', scenario.description))
+                                        .create()));
+                        text.addExtra(t);
+                    }
+                }
+                String config_part2 = ChatColor.translateAlternateColorCodes('&',
+                        "\n&7Apple Rate: &f" + (config.apple_rate * 100D) + "% &7Flint Rate: &f"
+                                + (config.flint_rate * 100D) + "% &7Shears:&f Work.\n" + "&7Final Heal: &f"
+                                + formatTime(config.final_heal_time) + "&7 PvP: &f" + formatTime(config.pvp_time)
+                                + "&7 Meetup Time: &f" + formatTime(config.border_time) + "\n&7Nether: "
+                                + onGreenOffRed(config.nether) + "&7 Speed I, II: " + onGreenOffRed(config.speed_1)
+                                + ", " + onGreenOffRed(config.speed_2) + " &7Strength I, II: "
+                                + onGreenOffRed(config.strength_1) + ", " + onGreenOffRed(config.poison_1)
+                                + " &7Poison I, II: " + onGreenOffRed(config.poison_2) + ", "
+                                + onGreenOffRed(config.strength_2) + " &7Bedbombs: " + onGreenOffRed(config.bedbombs)
+                                + "\n \n&7----------------------------\n\n");
+                text.addExtra(config_part2);
+                player.sendMessage(text);
+            }
 
             return true;
         }

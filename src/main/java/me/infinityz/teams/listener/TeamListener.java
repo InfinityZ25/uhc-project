@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -298,6 +299,14 @@ public class TeamListener implements Listener {
                                 ChatColor.translateAlternateColorCodes('&', "&7Starting in &3" + left + " &7seconds"));
                         break;
                     case 1: {
+                        Bukkit.getOnlinePlayers().stream().forEach(all -> {
+                            if (all.getActivePotionEffects().size() < 1)
+                                return;
+                            all.getActivePotionEffects().forEach(potion -> {
+                                all.removePotionEffect(potion.getType());
+                            });
+
+                        });
                         Bukkit.broadcastMessage(
                                 ChatColor.translateAlternateColorCodes('&', "&7Starting in &3" + left + " &7second!"));
                         break;
@@ -314,10 +323,16 @@ public class TeamListener implements Listener {
     public void gameStartedEvent(GameStartedEvent e) {
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "\n&4Game has begun, Good luck!"));
         Bukkit.getWorld("UHC").setDifficulty(Difficulty.NORMAL);
+        Bukkit.getWorld("UHC").setTime(1000);
+        Bukkit.getWorld("UHC").setGameRuleValue("doDaylightCycle", "true");
+        Bukkit.getOnlinePlayers().stream().forEach(all ->{
+            all.playSound(all.getLocation(), Sound.WOLF_HOWL, 1.0F, 1.0f);
+        });
         UHC.getInstance().locations.clear();
         UHC.getInstance().keepLoaded.clear();
         UHC.getInstance().sitted = null;
         UHC.getInstance().gameLogicManager.gameLogicTask.runTaskTimerAsynchronously(UHC.getInstance(), 20, 20);
+
     }
 
     @EventHandler
