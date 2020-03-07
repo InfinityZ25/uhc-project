@@ -1,6 +1,7 @@
 package me.infinityz.scenarios;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class ScenariosManager {
         scenarioMap.putIfAbsent("rodless", new Rodless());
         scenarioMap.putIfAbsent("bowless", new Bowless());
         scenarioMap.putIfAbsent("gheads", new GHeads());
+        scenarioMap.putIfAbsent("noclean", new NoClean());
     }
 
     public List<IScenario> getActiveScenarios() {
@@ -44,6 +46,7 @@ public class ScenariosManager {
             if (scenario.enabled)
                 scenarios.add(scenario.getClass().getSimpleName());
         });
+        Collections.sort(scenarios);
         return scenarios;
     }
 }

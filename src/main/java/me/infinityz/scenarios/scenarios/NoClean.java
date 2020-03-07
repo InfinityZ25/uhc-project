@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import me.infinityz.UHC;
@@ -54,7 +55,7 @@ public class NoClean extends IScenario {
             if (damager != null && damager instanceof Player) {
                 Player pl = (Player) damager;
                 pl.sendMessage(ChatColor.RED + "[NoClean] " + e.getEntity().getName() + " has invincibility for "
-                        + (time / 1000.0D) + "s.");
+                        + ((time - System.currentTimeMillis()) / 1000.0D) + "s.");
             }
         }
         if (damager != null && damager instanceof Player) {
@@ -66,6 +67,16 @@ public class NoClean extends IScenario {
                 damagerPlayer.sendMessage(ChatColor.RED + "[NoClean] You've lost your invincibility");
                 timeStamps.remove(damagerPlayer.getUniqueId());
             }
+        }
+    }
+
+    @EventHandler
+    public void entityDamageEvent(EntityDamageEvent e) {
+        if (e.getEntity().getType() != EntityType.PLAYER)
+            return;
+        Long time = timeStamps.get(e.getEntity().getUniqueId());
+        if (time != null && time > System.currentTimeMillis()) {
+            e.setCancelled(true);
         }
     }
 
