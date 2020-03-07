@@ -10,6 +10,10 @@ import me.infinityz.scenarios.IScenario;
  */
 public class NoFall extends IScenario {
 
+    public NoFall() {
+        this.description = "Fall Damage is disabled everywhere.";
+    }
+
     @EventHandler
     public void onFall(EntityDamageEvent e) {
         if (e.getEntity() instanceof org.bukkit.entity.Player && e.getCause() == EntityDamageEvent.DamageCause.FALL)

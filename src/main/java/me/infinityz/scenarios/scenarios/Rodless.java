@@ -14,6 +14,10 @@ import me.infinityz.scenarios.IScenario;
  */
 public class Rodless extends IScenario {
 
+    public Rodless() {
+        this.description = "Fishing rods are not craftable or usable.";
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR)

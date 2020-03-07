@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.command.Command;
@@ -18,7 +19,6 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.HoverEvent.Action;
 
 /**
  * GameConfigCMD
@@ -83,7 +83,7 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             GameConfig config = GameConfigManager.gameConfig;
-            String str = "\n\n\n&7----------------------------\n&3UHC Configuration\n \n&b"
+            String str = "\n\n&7----------------------------------------\n&3UHC Configuration\n \n&b"
                     + (UHC.getInstance().teamManager.team_enabled ? "To" + UHC.getInstance().teamManager.team_size
                             : "FFA")
                     + " ";
@@ -92,12 +92,13 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
                 TextComponent text = new TextComponent(ChatColor.translateAlternateColorCodes('&', str));
                 List<IScenario> activeScenarios = UHC.getInstance().scenariosManager.getActiveScenarios();
                 if (activeScenarios.isEmpty()) {
-                    text.addExtra("Vanilla");
+                    text.addExtra(ChatColor.AQUA + "Vanilla");
                 } else {
-                    while (activeScenarios.iterator().hasNext()) {
-                        IScenario scenario = activeScenarios.iterator().next();
-                        TextComponent t = new TextComponent(scenario.getClass().getSimpleName()
-                                + (activeScenarios.iterator().hasNext() ? ", " : "."));
+                    Iterator<IScenario> it = activeScenarios.iterator();
+                    while (it.hasNext()) {
+                        IScenario scenario = it.next();
+                        TextComponent t = new TextComponent(
+                                ChatColor.AQUA + scenario.getClass().getSimpleName() + (it.hasNext() ? ", " : "."));
                         t.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                 new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', scenario.description))
                                         .create()));
@@ -105,17 +106,40 @@ public class GameConfigCMD implements CommandExecutor, TabCompleter {
                     }
                 }
                 String config_part2 = ChatColor.translateAlternateColorCodes('&',
-                        "\n&7Apple Rate: &f" + (config.apple_rate * 100D) + "% &7Flint Rate: &f"
+                        "\n\n&7Apple Rate: &f" + (config.apple_rate * 100D) + "% &7Flint Rate: &f"
                                 + (config.flint_rate * 100D) + "% &7Shears:&f Work.\n" + "&7Final Heal: &f"
                                 + formatTime(config.final_heal_time) + "&7 PvP: &f" + formatTime(config.pvp_time)
                                 + "&7 Meetup Time: &f" + formatTime(config.border_time) + "\n&7Nether: "
-                                + onGreenOffRed(config.nether) + "&7 Speed I, II: " + onGreenOffRed(config.speed_1)
-                                + ", " + onGreenOffRed(config.speed_2) + " &7Strength I, II: "
-                                + onGreenOffRed(config.strength_1) + ", " + onGreenOffRed(config.poison_1)
-                                + " &7Poison I, II: " + onGreenOffRed(config.poison_2) + ", "
-                                + onGreenOffRed(config.strength_2) + " &7Bedbombs: " + onGreenOffRed(config.bedbombs)
-                                + "\n \n&7----------------------------\n\n");
+                                + onGreenOffRed(config.nether) + "&7 Speed: ");
                 text.addExtra(config_part2);
+                TextComponent speed = new TextComponent(onGreenOffRed(config.speed_1));
+
+                speed.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new ComponentBuilder(ChatColor.translateAlternateColorCodes('&',
+                                "&7I: " + onGreenOffRed(config.speed_1) + " &7II: " + onGreenOffRed(config.speed_2)))
+                                        .create()));
+                text.addExtra(speed);
+                text.addExtra(ChatColor.GRAY + " Strength: ");
+                TextComponent strength = new TextComponent(onGreenOffRed(config.strength_1));
+
+                strength.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', "&7I: "
+                                + onGreenOffRed(config.strength_1) + " &7II: " + onGreenOffRed(config.strength_2)))
+                                        .create()));
+                text.addExtra(strength);
+
+                text.addExtra(ChatColor.GRAY + " Poison: ");
+                TextComponent poison = new TextComponent(onGreenOffRed(config.poison_1));
+
+                poison.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new ComponentBuilder(ChatColor.translateAlternateColorCodes('&',
+                                "&7I: " + onGreenOffRed(config.poison_1) + " &7II: " + onGreenOffRed(config.poison_2)))
+                                        .create()));
+                text.addExtra(poison);
+                text.addExtra("\n" + ChatColor.GRAY + "Bedboms: " + onGreenOffRed(config.bedbombs) + ChatColor.GRAY
+                        + " Books: " + onGreenOffRed(false) + ChatColor.translateAlternateColorCodes('&',
+                                "\n\n&7----------------------------------------\n"));
+
                 player.sendMessage(text);
             }
 

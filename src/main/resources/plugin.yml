@@ -28,4 +28,4 @@ commands:
   helpop:
   invsee:
   latescatter:
-softdepend: [HolographicDisplays]
+softdepend: [HolographicDisplays, ProtocolLib]

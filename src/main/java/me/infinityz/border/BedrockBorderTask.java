@@ -57,7 +57,7 @@ public class BedrockBorderTask extends BukkitRunnable {
                 if (milliseconds + maxtick <= System.currentTimeMillis()) {
                     break;
                 }
-                int highest = world.getHighestBlockYAt(size - northInt, size);
+                int highest = world.getHighestBlockYAt(size, size - southInt);
                 for (int j = height; j > -1; j--) {
                     world.getBlockAt(size, highest, size - southInt).setType(Material.BEDROCK);
                 }
@@ -74,7 +74,7 @@ public class BedrockBorderTask extends BukkitRunnable {
                 if (milliseconds + maxtick <= System.currentTimeMillis()) {
                     break;
                 }
-                int highest = world.getHighestBlockYAt(size - northInt, size);
+                int highest = world.getHighestBlockYAt(size - westInt, -size);
                 for (int j = height; j > -1; j--) {
                     world.getBlockAt(size - westInt, highest, -size).setType(Material.BEDROCK);
                 }
@@ -94,7 +94,7 @@ public class BedrockBorderTask extends BukkitRunnable {
                 if (eastInt == size * 2) {
                     continue;
                 }
-                int highest = world.getHighestBlockYAt(size - northInt, size);
+                int highest = world.getHighestBlockYAt(-size, eastInt - size);
                 for (int j = height; j > -1; j--) {
                     world.getBlockAt(-size, highest, eastInt - size).setType(Material.BEDROCK);
                 }

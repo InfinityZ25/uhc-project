@@ -14,6 +14,10 @@ import me.infinityz.scenarios.IScenario;
  */
 public class Bowless extends IScenario {
 
+    public Bowless() {
+        this.description = "Bows are disabled. They can't be used or crafted.";
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR)

@@ -12,11 +12,15 @@ import me.infinityz.scenarios.IScenario;
 /**
  * HasteyBoys
  */
-public class HasteyBoys extends IScenario{
+public class HasteyBoys extends IScenario {
+
+    public HasteyBoys() {
+        this.description = "All tools come pre-enchanted with Efficieny and Unbreaking 3";
+    }
 
     @EventHandler
-    public void craftItemEvent(PrepareItemCraftEvent e){
-        if(isTool(e.getInventory().getResult().getType())){
+    public void craftItemEvent(PrepareItemCraftEvent e) {
+        if (isTool(e.getInventory().getResult().getType())) {
             ItemStack stack = e.getInventory().getResult().clone();
             ItemMeta meta = stack.getItemMeta();
             meta.addEnchant(Enchantment.DIG_SPEED, 3, true);

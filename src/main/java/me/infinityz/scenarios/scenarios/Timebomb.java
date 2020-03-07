@@ -13,12 +13,15 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import me.infinityz.UHC;
 import me.infinityz.scenarios.IScenario;
@@ -30,6 +33,10 @@ import net.minecraft.server.v1_8_R3.TileEntityChest;
  * Timebomb
  */
 public class Timebomb extends IScenario {
+
+    public Timebomb() {
+        this.description = "All player loot goes to a chest that blows up after 30 seconds.";
+    }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onDeath(PlayerDeathEvent e) {
@@ -71,15 +78,51 @@ public class Timebomb extends IScenario {
             }
         }
         // In-progress, set metadata for the future owner of this chest
-        chest.setMetadata("owner", new FixedMetadataValue(UHC.getInstance(), "UUID HERE?"));
+        chest.setMetadata("owner", new FixedMetadataValue(UHC.getInstance(),
+                e.getEntity().getKiller() == null ? null : e.getEntity().getKiller().getUniqueId()));
         // Debug
-        chest.getMetadata("owner").forEach(it -> {
-            Bukkit.broadcastMessage("Owner might be " + it.asString());
-        });
+        /*
+         * chest.getMetadata("owner").forEach(it -> {
+         * Bukkit.broadcastMessage("Owner might be " + it.asString()); });
+         */
         // Make the inventory name of the chest prettier
         setName(chest1, ChatColor.GOLD + e.getEntity().getName() + "'s loot");
+        new BukkitRunnable() {
+            int time = 30;
+
+            ArmorStand stand;
+
+            @Override
+            public void run() {
+                if (time == 30) {
+                    stand = summonHologram(loc);
+                }
+                time--;
+                stand.setCustomName(time + "s");
+                if (time <= 0) {
+                    Bukkit.broadcastMessage("[Timebomb] " + player.getName() + "'s corpse has exploded!");
+                    stand.remove();
+                    loc.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ(), 8F, false, true);
+                    this.cancel();
+                }
+            }
+        }.runTaskTimer(UHC.getInstance(), 0, 20L);
         // Continue with the logic later, add the explosion and the hologram.
 
+    }
+
+    ArmorStand summonHologram(Location loc) {
+        ArmorStand stand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+        stand.setSmall(true);
+        stand.setVisible(false);
+        stand.setCustomNameVisible(true);
+        stand.setCustomName("30s");
+        stand.setGravity(false);
+        stand.setCanPickupItems(false);
+        stand.setNoDamageTicks(20 * 50);
+        stand.setHealth(20.0);
+
+        return stand;
     }
 
     BlockFace getNonBlockedFace(Block block) {

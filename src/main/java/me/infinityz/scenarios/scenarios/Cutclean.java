@@ -21,6 +21,10 @@ import me.infinityz.scenarios.IScenario;
  */
 public class Cutclean extends IScenario {
 
+    public Cutclean() {
+        this.description = "Ores and animal drops are automatically smelted, no furnaces needed.";
+    }
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onBreak(BlockBreakEvent e) {
         if (e.isCancelled())

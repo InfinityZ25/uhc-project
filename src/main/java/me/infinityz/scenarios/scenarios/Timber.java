@@ -22,6 +22,10 @@ import me.infinityz.scenarios.IScenario;
  */
 public class Timber extends IScenario {
 
+    public Timber() {
+        this.description = "Breaking one log from a tree will break all other logs.";
+    }
+
     // Method that ensures ores don't fly like in many other servers
     void dropCenter(ItemStack itemStack, Location location) {
         Location centeredLocation = new Location(location.getWorld(), location.getBlockX() + 0.5,

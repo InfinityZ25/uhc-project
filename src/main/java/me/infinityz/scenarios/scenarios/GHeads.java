@@ -18,6 +18,10 @@ import net.md_5.bungee.api.ChatColor;
 public class GHeads extends IScenario {
     ItemStack item = new ItemStack(Material.GOLDEN_APPLE);
 
+    public GHeads() {
+        this.description = "Players drop golden heads on death.";
+    }
+
     @EventHandler(priority = EventPriority.LOW)
     public void onDeath(PlayerDeathEvent e) {
         e.getDrops().add(item);

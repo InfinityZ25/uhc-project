@@ -96,7 +96,6 @@ public class UHC extends JavaPlugin implements Listener {
         this.gameLogicManager = new GameLogicManager(this);
         this.combatLoggerManager = new CombatLoggerManager(this);
         GameStage.stage = GameStage.LOBBY;
-
     }
 
     @Override

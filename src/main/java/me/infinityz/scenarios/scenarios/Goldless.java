@@ -12,6 +12,9 @@ import me.infinityz.scenarios.IScenario;
  * GoldLess
  */
 public class Goldless extends IScenario {
+    public Goldless() {
+        this.description = "Mining gold is not allowed.";
+    }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBreak(BlockBreakEvent e) {

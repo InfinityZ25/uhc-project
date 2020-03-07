@@ -2,13 +2,20 @@ package me.infinityz.protocol;
 
 import java.lang.reflect.Method;
 
+import com.google.gson.Gson;
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import io.netty.channel.Channel;
 import me.infinityz.UHC;
 import me.infinityz.protocol.Reflection.FieldAccessor;
 import me.infinityz.scoreboard.ScoreboardSign;
+import net.minecraft.server.v1_8_R3.ChatBaseComponent;
 
 /**
  * ProtocolManager
@@ -34,6 +41,11 @@ public class ProtocolManager {
     private Class<?> soundClass = Reflection.getClass("{nms}.PacketPlayOutNamedSoundEffect");
     private FieldAccessor<String> soundName = Reflection.getField(soundClass, String.class, 0);
 
+    private Class<?> chatOut = Reflection.getClass("{nms}.PacketPlayOutChat");
+    private Class<Object> chatBase = Reflection.getUntypedClass("{nms}.IChatBaseComponent");
+
+    private FieldAccessor<Object> chatComponentField = Reflection.getField(chatOut, chatBase, 0);
+
     public TinyProtocol protocol;
 
     public ProtocolManager(UHC instance) {
@@ -42,6 +54,10 @@ public class ProtocolManager {
 
             @Override
             public Object onPacketInAsync(Player sender, Channel channel, Object packet) {
+                if (chatOut.isInstance(packet)) {
+                    System.out.println("packet");
+
+                }
                 return super.onPacketOutAsync(sender, channel, packet);
             }
 
@@ -72,9 +88,9 @@ public class ProtocolManager {
                     if (soundName.get(packet).equalsIgnoreCase("dig.glass")) {
                         return null;
                     }
-                } else {
-                    UHC.getInstance().map.put(packet.getClass().getSimpleName(),
-                            UHC.getInstance().map.getOrDefault(packet.getClass().getSimpleName(), 0) + 1);
+                } else if (chatOut.isInstance(packet)) {
+                    Object k = chatComponentField.get(packet);
+
                 }
 
                 return super.onPacketOutAsync(reciever, channel, packet);
